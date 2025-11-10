@@ -7,6 +7,7 @@ PROTO_FILES ?= \
     user/user.proto \
 
 proto:
+	@mkdir -p $(OUTPUT_PATH_GO)
 	@protoc -I $(PROTO_PATH) $(addprefix $(PROTO_PATH)/, $(PROTO_FILES)) \
 		--go_out=$(OUTPUT_PATH_GO) --go_opt=paths=source_relative \
 		--go-grpc_out=$(OUTPUT_PATH_GO) --go-grpc_opt=paths=source_relative
