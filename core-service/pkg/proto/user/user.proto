@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user.v1;
 
-option go_package = "userv1;userv1";
+option go_package = "github.com/axmdl1/MedicalDataExchange/core-service/pkg/gen/go/user;userv1";
 
 service UserService {
   // Создание пользователя
