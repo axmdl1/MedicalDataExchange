@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package datatransfer.v1;
+
+option go_package = "github.com/axmdl1/MedicalDataExchange/core-service/pkg/gen/go/datatransfer;datatransferv1";
+
+service DataTransferService {
+  // --- Medical Data CRUD ---
+  rpc CreateMedicalData(CreateMedicalDataRequest) returns (CreateMedicalDataResponse);
+  rpc GetMedicalData(GetMedicalDataRequest) returns (GetMedicalDataResponse);
+  rpc DeleteMedicalData(DeleteMedicalDataRequest) returns (DeleteMedicalDataResponse);
+  rpc ListMedicalData(ListMedicalDataRequest) returns (ListMedicalDataResponse);
+
+  // --- Data Transfer logic ---
+  rpc CreateDataTransfer(CreateDataTransferRequest) returns (CreateDataTransferResponse);
+  rpc GetDataTransfer(GetDataTransferRequest) returns (GetDataTransferResponse);
+  rpc ListDataTransfers(ListDataTransfersRequest) returns (ListDataTransfersResponse);
+
+  // Пациент подтверждает или отклоняет запрос
+  rpc HandleDataTransferDecision(HandleDataTransferDecisionRequest) returns (HandleDataTransferDecisionResponse);
+}
+
+// --- Entities ---
+
+message MedicalData {
+  int64 id = 1;
+  int64 user_id = 2;
+  int64 clinic_id = 3;
+  string diagnosis = 4;
+  string complaint = 5;
+  string treatment = 6;
+  string medications = 7;
+  string allergies = 8;
+  string doctor_notes = 9;
+  string lab_results = 10;
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message DataTransfer {
+  int64 id = 1;
+  int64 medical_data_id = 2;
+  int64 from_clinic_id = 3;
+  int64 to_clinic_id = 4;
+  int64 user_id = 5;
+  string status = 6; // pending, confirmed, rejected
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+// --- MedicalData messages ---
+
+message CreateMedicalDataRequest {
+  MedicalData medical_data = 1;
+}
+
+message CreateMedicalDataResponse {
+  MedicalData medical_data = 1;
+}
+
+message GetMedicalDataRequest {
+  int64 id = 1;
+}
+
+message GetMedicalDataResponse {
+  MedicalData medical_data = 1;
+}
+
+message DeleteMedicalDataRequest {
+  int64 id = 1;
+}
+
+message DeleteMedicalDataResponse {
+  bool success = 1;
+}
+
+message ListMedicalDataRequest {
+  int64 user_id = 1;
+  int64 clinic_id = 2;
+}
+
+message ListMedicalDataResponse {
+  repeated MedicalData medical_data = 1;
+}
+
+// --- DataTransfer messages ---
+
+message CreateDataTransferRequest {
+  int64 medical_data_id = 1;
+  int64 from_clinic_id = 2;
+  int64 to_clinic_id = 3;
+  int64 user_id = 4;
+}
+
+message CreateDataTransferResponse {
+  DataTransfer transfer = 1;
+}
+
+message GetDataTransferRequest {
+  int64 id = 1;
+}
+
+message GetDataTransferResponse {
+  DataTransfer transfer = 1;
+}
+
+message ListDataTransfersRequest {
+  int64 clinic_id = 1;
+  int64 user_id = 2;
+  string status = 3; // optional filter
+}
+
+message ListDataTransfersResponse {
+  repeated DataTransfer transfers = 1;
+}
+
+message HandleDataTransferDecisionRequest {
+  int64 transfer_id = 1;
+  int64 user_id = 2;
+  bool confirm = 3; // true = confirm, false = reject
+}
+
+message HandleDataTransferDecisionResponse {
+  DataTransfer transfer = 1;
+}
