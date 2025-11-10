@@ -519,8 +519,8 @@ func (x *DeleteMedicalDataResponse) GetSuccess() bool {
 
 type ListMedicalDataRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	ClinicId      int64                  `protobuf:"varint,2,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
+	UserId        *int64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3,oneof" json:"user_id,omitempty"`
+	ClinicId      *int64                 `protobuf:"varint,2,opt,name=clinic_id,json=clinicId,proto3,oneof" json:"clinic_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -556,15 +556,15 @@ func (*ListMedicalDataRequest) Descriptor() ([]byte, []int) {
 }
 
 func (x *ListMedicalDataRequest) GetUserId() int64 {
-	if x != nil {
-		return x.UserId
+	if x != nil && x.UserId != nil {
+		return *x.UserId
 	}
 	return 0
 }
 
 func (x *ListMedicalDataRequest) GetClinicId() int64 {
-	if x != nil {
-		return x.ClinicId
+	if x != nil && x.ClinicId != nil {
+		return *x.ClinicId
 	}
 	return 0
 }
@@ -815,9 +815,9 @@ func (x *GetDataTransferResponse) GetTransfer() *DataTransfer {
 
 type ListDataTransfersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ClinicId      int64                  `protobuf:"varint,1,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
-	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"` // optional filter
+	ClinicId      *int64                 `protobuf:"varint,1,opt,name=clinic_id,json=clinicId,proto3,oneof" json:"clinic_id,omitempty"`
+	UserId        *int64                 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3,oneof" json:"user_id,omitempty"`
+	Status        *string                `protobuf:"bytes,3,opt,name=status,proto3,oneof" json:"status,omitempty"` // optional filter
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -853,22 +853,22 @@ func (*ListDataTransfersRequest) Descriptor() ([]byte, []int) {
 }
 
 func (x *ListDataTransfersRequest) GetClinicId() int64 {
-	if x != nil {
-		return x.ClinicId
+	if x != nil && x.ClinicId != nil {
+		return *x.ClinicId
 	}
 	return 0
 }
 
 func (x *ListDataTransfersRequest) GetUserId() int64 {
-	if x != nil {
-		return x.UserId
+	if x != nil && x.UserId != nil {
+		return *x.UserId
 	}
 	return 0
 }
 
 func (x *ListDataTransfersRequest) GetStatus() string {
-	if x != nil {
-		return x.Status
+	if x != nil && x.Status != nil {
+		return *x.Status
 	}
 	return ""
 }
@@ -1066,10 +1066,14 @@ const file_data_transfer_data_transfer_proto_rawDesc = "" +
 	"\x18DeleteMedicalDataRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"5\n" +
 	"\x19DeleteMedicalDataResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"N\n" +
-	"\x16ListMedicalDataRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1b\n" +
-	"\tclinic_id\x18\x02 \x01(\x03R\bclinicId\"Z\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"r\n" +
+	"\x16ListMedicalDataRequest\x12\x1c\n" +
+	"\auser_id\x18\x01 \x01(\x03H\x00R\x06userId\x88\x01\x01\x12 \n" +
+	"\tclinic_id\x18\x02 \x01(\x03H\x01R\bclinicId\x88\x01\x01B\n" +
+	"\n" +
+	"\b_user_idB\f\n" +
+	"\n" +
+	"_clinic_id\"Z\n" +
 	"\x17ListMedicalDataResponse\x12?\n" +
 	"\fmedical_data\x18\x01 \x03(\v2\x1c.datatransfer.v1.MedicalDataR\vmedicalData\"\xa4\x01\n" +
 	"\x19CreateDataTransferRequest\x12&\n" +
@@ -1083,11 +1087,16 @@ const file_data_transfer_data_transfer_proto_rawDesc = "" +
 	"\x16GetDataTransferRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"T\n" +
 	"\x17GetDataTransferResponse\x129\n" +
-	"\btransfer\x18\x01 \x01(\v2\x1d.datatransfer.v1.DataTransferR\btransfer\"h\n" +
-	"\x18ListDataTransfersRequest\x12\x1b\n" +
-	"\tclinic_id\x18\x01 \x01(\x03R\bclinicId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\"X\n" +
+	"\btransfer\x18\x01 \x01(\v2\x1d.datatransfer.v1.DataTransferR\btransfer\"\x9c\x01\n" +
+	"\x18ListDataTransfersRequest\x12 \n" +
+	"\tclinic_id\x18\x01 \x01(\x03H\x00R\bclinicId\x88\x01\x01\x12\x1c\n" +
+	"\auser_id\x18\x02 \x01(\x03H\x01R\x06userId\x88\x01\x01\x12\x1b\n" +
+	"\x06status\x18\x03 \x01(\tH\x02R\x06status\x88\x01\x01B\f\n" +
+	"\n" +
+	"_clinic_idB\n" +
+	"\n" +
+	"\b_user_idB\t\n" +
+	"\a_status\"X\n" +
 	"\x19ListDataTransfersResponse\x12;\n" +
 	"\ttransfers\x18\x01 \x03(\v2\x1d.datatransfer.v1.DataTransferR\ttransfers\"w\n" +
 	"!HandleDataTransferDecisionRequest\x12\x1f\n" +
@@ -1177,6 +1186,8 @@ func file_data_transfer_data_transfer_proto_init() {
 	if File_data_transfer_data_transfer_proto != nil {
 		return
 	}
+	file_data_transfer_data_transfer_proto_msgTypes[8].OneofWrappers = []any{}
+	file_data_transfer_data_transfer_proto_msgTypes[14].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

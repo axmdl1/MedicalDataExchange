@@ -75,8 +75,8 @@ message DeleteMedicalDataResponse {
 }
 
 message ListMedicalDataRequest {
-  int64 user_id = 1;
-  int64 clinic_id = 2;
+  optional int64 user_id = 1;
+  optional int64 clinic_id = 2;
 }
 
 message ListMedicalDataResponse {
@@ -105,9 +105,9 @@ message GetDataTransferResponse {
 }
 
 message ListDataTransfersRequest {
-  int64 clinic_id = 1;
-  int64 user_id = 2;
-  string status = 3; // optional filter
+  optional int64 clinic_id = 1;
+  optional int64 user_id = 2;
+  optional string status = 3; // optional filter
 }
 
 message ListDataTransfersResponse {
