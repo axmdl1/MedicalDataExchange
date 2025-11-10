@@ -35,5 +35,5 @@ type DataTransfer struct {
 }
 
 func (DataTransfer) TableName() string {
-	return "data_transfers"
+	return "data_transfer"
 }

@@ -1,0 +1,5 @@
+server:
+  port: 50052
+
+database:
+  url: "host=localhost user=postgres password=postgres dbname=medical_exchange port=5432 sslmode=disable"

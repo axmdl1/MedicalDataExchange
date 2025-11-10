@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/axmdl1/MedicalDataExchange/core-service/internal/model"
+	"github.com/axmdl1/MedicalDataExchange/data-transfer-service/internal/model"
 	"gorm.io/gorm"
 )
 
