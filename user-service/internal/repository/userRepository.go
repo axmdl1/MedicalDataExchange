@@ -12,7 +12,7 @@ type UserRepository interface {
 	Create(ctx context.Context, u *models.User) error
 	GetByID(ctx context.Context, id int64) (*models.User, error)
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
-	List(ctx context.Context, clinicID int64, userType string) ([]models.User, error)
+	List(ctx context.Context, clinicID int64, hasClinicID bool, userType string) ([]models.User, error)
 	Update(ctx context.Context, u *models.User) error
 	Delete(ctx context.Context, id int64) error
 }
@@ -45,10 +45,10 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.
 	return &u, nil
 }
 
-func (r *userRepository) List(ctx context.Context, clinicID int64, userType string) ([]models.User, error) {
+func (r *userRepository) List(ctx context.Context, clinicID int64, hasClinicID bool, userType string) ([]models.User, error) {
 	var users []models.User
 	q := r.db.WithContext(ctx).Model(&models.User{})
-	if clinicID > 0 {
+	if hasClinicID {
 		q = q.Where("clinic_id = ?", clinicID)
 	}
 	if userType != "" {

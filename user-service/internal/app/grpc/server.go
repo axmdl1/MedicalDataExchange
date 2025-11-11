@@ -12,6 +12,7 @@ import (
 	userv1 "github.com/axmdl1/MedicalDataExchange/core-service/pkg/gen/go/user"
 	"github.com/axmdl1/MedicalDataExchange/user-service/internal/models"
 	"github.com/axmdl1/MedicalDataExchange/user-service/internal/service"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type Server struct {
@@ -57,7 +58,13 @@ func (s *Server) GetUser(ctx context.Context, req *userv1.GetUserRequest) (*user
 }
 
 func (s *Server) ListUsers(ctx context.Context, req *userv1.ListUsersRequest) (*userv1.ListUsersResponse, error) {
-	users, err := s.svc.List(ctx, req.ClinicId, req.Type)
+	var clinicPtr *int64
+	if req.ClinicId != nil {
+		v := req.ClinicId.Value
+		clinicPtr = &v
+	}
+
+	users, err := s.svc.List(ctx, clinicPtr, req.Type)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -104,6 +111,11 @@ func fromProto(u *userv1.User) *models.User {
 	if u == nil {
 		return &models.User{}
 	}
+	var clinicPtr *int64
+	if u.ClinicId != nil {
+		v := u.ClinicId.Value
+		clinicPtr = &v
+	}
 	return &models.User{
 		ID:          u.Id,
 		FirstName:   u.FirstName,
@@ -111,14 +123,18 @@ func fromProto(u *userv1.User) *models.User {
 		Email:       u.Email,
 		PhoneNumber: u.PhoneNumber,
 		Type:        u.Type,
-		Password:    u.Password, // на Create/Update ожидается сырой пароль -> захешируем в сервисе
-		ClinicID:    0,          // если добавите в proto — заполните
+		Password:    u.Password,
+		ClinicID:    clinicPtr,
 	}
 }
 
 func toProto(u *models.User) *userv1.User {
 	if u == nil {
 		return &userv1.User{}
+	}
+	var clinicVal *wrapperspb.Int64Value
+	if u.ClinicID != nil {
+		clinicVal = wrapperspb.Int64(*u.ClinicID)
 	}
 	return &userv1.User{
 		Id:          u.ID,
@@ -127,6 +143,6 @@ func toProto(u *models.User) *userv1.User {
 		Email:       u.Email,
 		PhoneNumber: u.PhoneNumber,
 		Type:        u.Type,
-		// Password — не заполняем наружу
+		ClinicId:    clinicVal, // password наружу не отправляем
 	}
 }

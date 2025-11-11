@@ -9,6 +9,7 @@ package userv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -30,6 +31,7 @@ type User struct {
 	PhoneNumber   string                 `protobuf:"bytes,5,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty"`
 	Type          string                 `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
 	Password      string                 `protobuf:"bytes,7,opt,name=password,proto3" json:"password,omitempty"`
+	ClinicId      *wrapperspb.Int64Value `protobuf:"bytes,8,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -111,6 +113,13 @@ func (x *User) GetPassword() string {
 		return x.Password
 	}
 	return ""
+}
+
+func (x *User) GetClinicId() *wrapperspb.Int64Value {
+	if x != nil {
+		return x.ClinicId
+	}
+	return nil
 }
 
 type CreateUserRequest struct {
@@ -291,7 +300,7 @@ func (x *GetUserResponse) GetUser() *User {
 
 type ListUsersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ClinicId      int64                  `protobuf:"varint,1,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
+	ClinicId      *wrapperspb.Int64Value `protobuf:"bytes,1,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
 	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -327,11 +336,11 @@ func (*ListUsersRequest) Descriptor() ([]byte, []int) {
 	return file_user_user_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *ListUsersRequest) GetClinicId() int64 {
+func (x *ListUsersRequest) GetClinicId() *wrapperspb.Int64Value {
 	if x != nil {
 		return x.ClinicId
 	}
-	return 0
+	return nil
 }
 
 func (x *ListUsersRequest) GetType() string {
@@ -669,7 +678,7 @@ var File_user_user_proto protoreflect.FileDescriptor
 
 const file_user_user_proto_rawDesc = "" +
 	"\n" +
-	"\x0fuser/user.proto\x12\auser.v1\"\xbb\x01\n" +
+	"\x0fuser/user.proto\x12\auser.v1\x1a\x1egoogle/protobuf/wrappers.proto\"\xf5\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
@@ -678,7 +687,8 @@ const file_user_user_proto_rawDesc = "" +
 	"\x05email\x18\x04 \x01(\tR\x05email\x12!\n" +
 	"\fphone_number\x18\x05 \x01(\tR\vphoneNumber\x12\x12\n" +
 	"\x04type\x18\x06 \x01(\tR\x04type\x12\x1a\n" +
-	"\bpassword\x18\a \x01(\tR\bpassword\"6\n" +
+	"\bpassword\x18\a \x01(\tR\bpassword\x128\n" +
+	"\tclinic_id\x18\b \x01(\v2\x1b.google.protobuf.Int64ValueR\bclinicId\"6\n" +
 	"\x11CreateUserRequest\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\"7\n" +
 	"\x12CreateUserResponse\x12!\n" +
@@ -686,9 +696,9 @@ const file_user_user_proto_rawDesc = "" +
 	"\x0eGetUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"4\n" +
 	"\x0fGetUserResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\"C\n" +
-	"\x10ListUsersRequest\x12\x1b\n" +
-	"\tclinic_id\x18\x01 \x01(\x03R\bclinicId\x12\x12\n" +
+	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\"`\n" +
+	"\x10ListUsersRequest\x128\n" +
+	"\tclinic_id\x18\x01 \x01(\v2\x1b.google.protobuf.Int64ValueR\bclinicId\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\"8\n" +
 	"\x11ListUsersResponse\x12#\n" +
 	"\x05users\x18\x01 \x03(\v2\r.user.v1.UserR\x05users\"6\n" +
@@ -731,45 +741,48 @@ func file_user_user_proto_rawDescGZIP() []byte {
 
 var file_user_user_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_user_user_proto_goTypes = []any{
-	(*User)(nil),               // 0: user.v1.User
-	(*CreateUserRequest)(nil),  // 1: user.v1.CreateUserRequest
-	(*CreateUserResponse)(nil), // 2: user.v1.CreateUserResponse
-	(*GetUserRequest)(nil),     // 3: user.v1.GetUserRequest
-	(*GetUserResponse)(nil),    // 4: user.v1.GetUserResponse
-	(*ListUsersRequest)(nil),   // 5: user.v1.ListUsersRequest
-	(*ListUsersResponse)(nil),  // 6: user.v1.ListUsersResponse
-	(*UpdateUserRequest)(nil),  // 7: user.v1.UpdateUserRequest
-	(*UpdateUserResponse)(nil), // 8: user.v1.UpdateUserResponse
-	(*DeleteUserRequest)(nil),  // 9: user.v1.DeleteUserRequest
-	(*DeleteUserResponse)(nil), // 10: user.v1.DeleteUserResponse
-	(*LoginRequest)(nil),       // 11: user.v1.LoginRequest
-	(*LoginResponse)(nil),      // 12: user.v1.LoginResponse
+	(*User)(nil),                  // 0: user.v1.User
+	(*CreateUserRequest)(nil),     // 1: user.v1.CreateUserRequest
+	(*CreateUserResponse)(nil),    // 2: user.v1.CreateUserResponse
+	(*GetUserRequest)(nil),        // 3: user.v1.GetUserRequest
+	(*GetUserResponse)(nil),       // 4: user.v1.GetUserResponse
+	(*ListUsersRequest)(nil),      // 5: user.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),     // 6: user.v1.ListUsersResponse
+	(*UpdateUserRequest)(nil),     // 7: user.v1.UpdateUserRequest
+	(*UpdateUserResponse)(nil),    // 8: user.v1.UpdateUserResponse
+	(*DeleteUserRequest)(nil),     // 9: user.v1.DeleteUserRequest
+	(*DeleteUserResponse)(nil),    // 10: user.v1.DeleteUserResponse
+	(*LoginRequest)(nil),          // 11: user.v1.LoginRequest
+	(*LoginResponse)(nil),         // 12: user.v1.LoginResponse
+	(*wrapperspb.Int64Value)(nil), // 13: google.protobuf.Int64Value
 }
 var file_user_user_proto_depIdxs = []int32{
-	0,  // 0: user.v1.CreateUserRequest.user:type_name -> user.v1.User
-	0,  // 1: user.v1.CreateUserResponse.user:type_name -> user.v1.User
-	0,  // 2: user.v1.GetUserResponse.user:type_name -> user.v1.User
-	0,  // 3: user.v1.ListUsersResponse.users:type_name -> user.v1.User
-	0,  // 4: user.v1.UpdateUserRequest.user:type_name -> user.v1.User
-	0,  // 5: user.v1.UpdateUserResponse.user:type_name -> user.v1.User
-	0,  // 6: user.v1.LoginResponse.user:type_name -> user.v1.User
-	1,  // 7: user.v1.UserService.CreateUser:input_type -> user.v1.CreateUserRequest
-	3,  // 8: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
-	5,  // 9: user.v1.UserService.ListUsers:input_type -> user.v1.ListUsersRequest
-	7,  // 10: user.v1.UserService.UpdateUser:input_type -> user.v1.UpdateUserRequest
-	9,  // 11: user.v1.UserService.DeleteUser:input_type -> user.v1.DeleteUserRequest
-	11, // 12: user.v1.UserService.Login:input_type -> user.v1.LoginRequest
-	2,  // 13: user.v1.UserService.CreateUser:output_type -> user.v1.CreateUserResponse
-	4,  // 14: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
-	6,  // 15: user.v1.UserService.ListUsers:output_type -> user.v1.ListUsersResponse
-	8,  // 16: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
-	10, // 17: user.v1.UserService.DeleteUser:output_type -> user.v1.DeleteUserResponse
-	12, // 18: user.v1.UserService.Login:output_type -> user.v1.LoginResponse
-	13, // [13:19] is the sub-list for method output_type
-	7,  // [7:13] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	13, // 0: user.v1.User.clinic_id:type_name -> google.protobuf.Int64Value
+	0,  // 1: user.v1.CreateUserRequest.user:type_name -> user.v1.User
+	0,  // 2: user.v1.CreateUserResponse.user:type_name -> user.v1.User
+	0,  // 3: user.v1.GetUserResponse.user:type_name -> user.v1.User
+	13, // 4: user.v1.ListUsersRequest.clinic_id:type_name -> google.protobuf.Int64Value
+	0,  // 5: user.v1.ListUsersResponse.users:type_name -> user.v1.User
+	0,  // 6: user.v1.UpdateUserRequest.user:type_name -> user.v1.User
+	0,  // 7: user.v1.UpdateUserResponse.user:type_name -> user.v1.User
+	0,  // 8: user.v1.LoginResponse.user:type_name -> user.v1.User
+	1,  // 9: user.v1.UserService.CreateUser:input_type -> user.v1.CreateUserRequest
+	3,  // 10: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
+	5,  // 11: user.v1.UserService.ListUsers:input_type -> user.v1.ListUsersRequest
+	7,  // 12: user.v1.UserService.UpdateUser:input_type -> user.v1.UpdateUserRequest
+	9,  // 13: user.v1.UserService.DeleteUser:input_type -> user.v1.DeleteUserRequest
+	11, // 14: user.v1.UserService.Login:input_type -> user.v1.LoginRequest
+	2,  // 15: user.v1.UserService.CreateUser:output_type -> user.v1.CreateUserResponse
+	4,  // 16: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
+	6,  // 17: user.v1.UserService.ListUsers:output_type -> user.v1.ListUsersResponse
+	8,  // 18: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
+	10, // 19: user.v1.UserService.DeleteUser:output_type -> user.v1.DeleteUserResponse
+	12, // 20: user.v1.UserService.Login:output_type -> user.v1.LoginResponse
+	15, // [15:21] is the sub-list for method output_type
+	9,  // [9:15] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_user_user_proto_init() }

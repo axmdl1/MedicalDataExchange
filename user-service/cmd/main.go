@@ -1,6 +1,7 @@
 package main
 
 import (
+	grpchost "github.com/axmdl1/MedicalDataExchange/user-service/internal/app/grpc"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -10,7 +11,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/axmdl1/MedicalDataExchange/user-service/config"
-	grpchost "github.com/axmdl1/MedicalDataExchange/user-service/internal/grpc"
 	"github.com/axmdl1/MedicalDataExchange/user-service/internal/models"
 	"github.com/axmdl1/MedicalDataExchange/user-service/internal/repository"
 	"github.com/axmdl1/MedicalDataExchange/user-service/internal/service"

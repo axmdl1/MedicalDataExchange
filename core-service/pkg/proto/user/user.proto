@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package user.v1;
 
 option go_package = "github.com/axmdl1/MedicalDataExchange/core-service/pkg/gen/go/user;userv1";
@@ -34,6 +36,8 @@ message User {
   string phone_number = 5;
   string type = 6;
   string password = 7;
+
+  google.protobuf.Int64Value clinic_id = 8;
 }
 
 message CreateUserRequest {
@@ -53,7 +57,7 @@ message GetUserResponse {
 }
 
 message ListUsersRequest {
-  int64 clinic_id = 1;
+  google.protobuf.Int64Value clinic_id = 1;
   string type = 2;
 }
 
