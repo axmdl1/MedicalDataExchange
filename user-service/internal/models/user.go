@@ -10,7 +10,7 @@ type User struct {
 	ID          int64          `gorm:"primaryKey;autoIncrement"`
 	FirstName   string         `gorm:"type:varchar(100);not null"`
 	LastName    string         `gorm:"type:varchar(100);not null"`
-	Email       string         `gorm:"uniqueIndex;type:varchar(255);not null"`
+	Email       string         `gorm:"type:varchar(255);not null;index"`
 	PhoneNumber string         `gorm:"type:varchar(20)"`
 	Type        string         `gorm:"type:varchar(50);not null"` // patient|employee|admin
 	Password    string         `gorm:"type:varchar(255);not null"`

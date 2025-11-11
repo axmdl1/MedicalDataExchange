@@ -33,17 +33,10 @@ func NewUserService(repo repository.UserRepository, jwt *JWTManager) UserService
 }
 
 func (s *userService) Create(ctx context.Context, u *models.User) (*models.User, error) {
-	switch u.Type {
-	case "employee":
-		if u.ClinicID == nil {
-			return nil, errors.New("clinic_id is required for employee")
-		}
-	case "patient":
-		// ok: может быть nil
-	default:
-		// для admin решите политику: например, nil допустим
+	// правило: employee -> clinic_id обязателен
+	if u.Type == "employee" && u.ClinicID == nil {
+		return nil, errors.New("clinic_id is required for employee")
 	}
-
 	hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -67,14 +60,9 @@ func (s *userService) List(ctx context.Context, clinicID *int64, userType string
 }
 
 func (s *userService) Update(ctx context.Context, u *models.User) (*models.User, error) {
-	switch u.Type {
-	case "employee":
-		if u.ClinicID == nil {
-			return nil, errors.New("clinic_id is required for employee")
-		}
+	if u.Type == "employee" && u.ClinicID == nil {
+		return nil, errors.New("clinic_id is required for employee")
 	}
-
-	// если пришёл новый пароль — захешируем
 	if u.Password != "" {
 		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 		if err != nil {
