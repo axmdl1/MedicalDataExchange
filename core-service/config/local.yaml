@@ -3,3 +3,4 @@ rest:
 
 grpc:
   data_transfer: "localhost:50052"
+  user: "localhost:50053"

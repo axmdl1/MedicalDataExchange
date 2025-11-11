@@ -15,22 +15,34 @@ import (
 func authUnary(jwtm *service.JWTManager) grpc.UnaryServerInterceptor {
 	public := map[string]bool{
 		"/user.v1.UserService/Login":      true,
-		"/user.v1.UserService/CreateUser": true,
+		"/user.v1.UserService/CreateUser": true, // публичный, но с возможной авторизацией
 	}
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		md, _ := metadata.FromIncomingContext(ctx)
+		// попробуем вытащить токен, если он есть
+		var token string
+		if md != nil {
+			if vals := md.Get("authorization"); len(vals) > 0 {
+				v := strings.TrimSpace(vals[0])
+				token = strings.TrimSpace(strings.TrimPrefix(v, "Bearer"))
+			}
+		}
+
+		// ключевая правка: даже для public методов — если токен есть, парсим и кладём claims
 		if public[info.FullMethod] {
+			if token != "" {
+				if claims, err := jwtm.ParseClaims(token); err == nil {
+					ctx = withClaims(ctx, claims)
+				}
+				// если токен кривой — всё равно не роняем публичный метод
+			}
 			return handler(ctx, req)
 		}
 
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			return nil, status.Error(codes.Unauthenticated, "missing metadata")
-		}
-		auths := md.Get("authorization")
-		if len(auths) == 0 {
+		// дальше — как было: для приватных методов токен обязателен
+		if token == "" {
 			return nil, status.Error(codes.Unauthenticated, "missing authorization")
 		}
-		token := strings.TrimSpace(strings.TrimPrefix(auths[0], "Bearer"))
 		claims, err := jwtm.ParseClaims(token)
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, "invalid token")

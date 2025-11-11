@@ -8,6 +8,7 @@ type Config struct {
 	} `mapstructure:"rest"`
 	GRPC struct {
 		DataTransfer string `mapstructure:"data_transfer"`
+		User         string `mapstructure:"user"`
 	} `mapstructure:"grpc"`
 }
 
@@ -19,6 +20,7 @@ func Load() Config {
 
 	viper.SetDefault("rest.port", 8080)
 	viper.SetDefault("grpc.data_transfer", "localhost:50052")
+	viper.SetDefault("grpc.user", "localhost:50053")
 
 	_ = viper.ReadInConfig()
 
