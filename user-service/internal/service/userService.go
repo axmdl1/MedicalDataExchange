@@ -71,18 +71,56 @@ func (s *userService) List(ctx context.Context, clinicID *int64, userType string
 	return s.repo.List(ctx, 0, false, userType)
 }
 
-func (s *userService) Update(ctx context.Context, u *models.User) (*models.User, error) {
-	if u.Type == "employee" && u.ClinicID == nil {
-		return nil, errors.New("clinic_id is required for employee")
+func (s *userService) Update(ctx context.Context, in *models.User) (*models.User, error) {
+	// 1) читаем текущего пользователя
+	cur, err := s.repo.GetByID(ctx, in.ID)
+	if err != nil {
+		return nil, err
 	}
-	if u.Password != "" {
-		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+
+	// 2) правила ролей (если нужно оставляем твои проверки выше,
+	//    здесь предполагаем, что handler уже проверил роль/клинику)
+
+	// 3) только переданные поля переносим
+	if in.FirstName != "" {
+		cur.FirstName = in.FirstName
+	}
+	if in.LastName != "" {
+		cur.LastName = in.LastName
+	}
+	if in.Email != "" {
+		// нормализация
+		cur.Email = strings.TrimSpace(strings.ToLower(in.Email))
+	}
+	// phone можно обновить до пустой строки? если НЕТ — тогда:
+	if in.PhoneNumber != "" {
+		cur.PhoneNumber = in.PhoneNumber
+	}
+	// тип менять обычно нельзя пациенту/сотруднику. Если меняем — проверяй выше.
+	if in.Type != "" {
+		cur.Type = in.Type
+	}
+	if in.ClinicID != nil {
+		cur.ClinicID = in.ClinicID
+	}
+	if in.Password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 		if err != nil {
 			return nil, err
 		}
-		u.Password = string(hash)
+		cur.Password = string(hash)
 	}
-	return u, s.repo.Update(ctx, u)
+
+	// 4) доп. правило: employee обязан иметь clinic_id
+	if cur.Type == "employee" && cur.ClinicID == nil {
+		return nil, errors.New("clinic_id is required for employee")
+	}
+
+	// 5) сохраняем уже «слитую» модель
+	if err := s.repo.Update(ctx, cur); err != nil {
+		return nil, err
+	}
+	return cur, nil
 }
 
 func (s *userService) Delete(ctx context.Context, id int64) error {

@@ -44,7 +44,7 @@ func New(cfg config.Config) *App {
 		r.Post("/", hUser.CreateUser)       // публичная рега пациента или по token-у (employee/admin)
 		r.Get("/", hUser.ListUsers)         // требует Authorization
 		r.Get("/{id}", hUser.GetUser)       // требует Authorization
-		r.Put("/{id}", hUser.UpdateUser)    // требует Authorization
+		r.Patch("/{id}", hUser.UpdateUser)  // требует Authorization
 		r.Delete("/{id}", hUser.DeleteUser) // требует Authorization
 	})
 	r.Post("/users/login", hUser.Login) // публичный
