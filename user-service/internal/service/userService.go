@@ -85,7 +85,7 @@ func (s *userService) Login(ctx context.Context, email, password string) (*model
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return nil, "", 0, ErrInvalidCredentials
 	}
-	token, exp, err := s.jwt.Sign(u.ID, u.Type)
+	token, exp, err := s.jwt.Sign(u.ID, u.Type, u.ClinicID, u.Email)
 	if err != nil {
 		return nil, "", 0, err
 	}

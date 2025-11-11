@@ -99,7 +99,7 @@ func Run(configPath string) error {
 	userSvc := service.NewUserService(userRepo, jwt)
 
 	// gRPC сервер
-	s := grpc.NewServer(userSvc)
+	s := grpc.NewServer(userSvc, jwt)
 	log.Info().Str("addr", cfg.GRPC.Port).Msg("grpc listen")
 	return s.Start(cfg.GRPC.Port)
 }
