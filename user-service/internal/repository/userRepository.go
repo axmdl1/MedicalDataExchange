@@ -15,6 +15,8 @@ type UserRepository interface {
 	List(ctx context.Context, clinicID int64, hasClinicID bool, userType string) ([]models.User, error)
 	Update(ctx context.Context, u *models.User) error
 	Delete(ctx context.Context, id int64) error
+	GetSoftDeletedByEmail(ctx context.Context, email string) (*models.User, error)
+	Reactivate(ctx context.Context, id int64) error
 }
 
 type userRepository struct {
@@ -66,4 +68,23 @@ func (r *userRepository) Update(ctx context.Context, u *models.User) error {
 
 func (r *userRepository) Delete(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Delete(&models.User{}, id).Error
+}
+
+// Найти soft-deleted запись по email
+func (r *userRepository) GetSoftDeletedByEmail(ctx context.Context, email string) (*models.User, error) {
+	var u models.User
+	if err := r.db.Unscoped().WithContext(ctx).
+		Where("lower(email) = lower(?) AND deleted_at IS NOT NULL", email).
+		First(&u).Error; err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+// Снять soft delete (reactivate)
+func (r *userRepository) Reactivate(ctx context.Context, id int64) error {
+	return r.db.Unscoped().WithContext(ctx).
+		Model(&models.User{}).
+		Where("id = ?", id).
+		Update("deleted_at", nil).Error
 }

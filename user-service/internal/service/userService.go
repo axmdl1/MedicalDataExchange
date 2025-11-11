@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/jackc/pgx/v5/pgconn"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -33,7 +35,13 @@ func NewUserService(repo repository.UserRepository, jwt *JWTManager) UserService
 }
 
 func (s *userService) Create(ctx context.Context, u *models.User) (*models.User, error) {
-	// правило: employee -> clinic_id обязателен
+	u.Email = strings.TrimSpace(strings.ToLower(u.Email))
+
+	// Если есть soft-deleted аккаунт — просим зайти (Login) для восстановления
+	if _, err := s.repo.GetSoftDeletedByEmail(ctx, u.Email); err == nil {
+		return nil, errors.New("account for this email was deleted earlier; please login to restore it")
+	}
+
 	if u.Type == "employee" && u.ClinicID == nil {
 		return nil, errors.New("clinic_id is required for employee")
 	}
@@ -43,6 +51,10 @@ func (s *userService) Create(ctx context.Context, u *models.User) (*models.User,
 	}
 	u.Password = string(hash)
 	if err := s.repo.Create(ctx, u); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, errors.New("email already used")
+		}
 		return nil, err
 	}
 	return u, nil
@@ -78,16 +90,38 @@ func (s *userService) Delete(ctx context.Context, id int64) error {
 }
 
 func (s *userService) Login(ctx context.Context, email, password string) (*models.User, string, int64, error) {
+	email = strings.TrimSpace(strings.ToLower(email))
+
+	// 1) ищем активного
 	u, err := s.repo.GetByEmail(ctx, email)
-	if err != nil {
+	if err == nil {
+		if bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)) != nil {
+			return nil, "", 0, ErrInvalidCredentials
+		}
+		token, exp, err := s.jwt.Sign(u.ID, u.Type, u.ClinicID, u.Email)
+		if err != nil {
+			return nil, "", 0, err
+		}
+		return u, token, exp.Unix(), nil
+	}
+
+	// 2) не нашли активного — пробуем soft-deleted
+	deleted, err2 := s.repo.GetSoftDeletedByEmail(ctx, email)
+	if err2 != nil {
+		// вообще нет такого e-mail
 		return nil, "", 0, ErrInvalidCredentials
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+	// проверяем пароль от старого аккаунта
+	if bcrypt.CompareHashAndPassword([]byte(deleted.Password), []byte(password)) != nil {
 		return nil, "", 0, ErrInvalidCredentials
 	}
-	token, exp, err := s.jwt.Sign(u.ID, u.Type, u.ClinicID, u.Email)
+	// реактивируем
+	if err := s.repo.Reactivate(ctx, deleted.ID); err != nil {
+		return nil, "", 0, err
+	}
+	token, exp, err := s.jwt.Sign(deleted.ID, deleted.Type, deleted.ClinicID, deleted.Email)
 	if err != nil {
 		return nil, "", 0, err
 	}
-	return u, token, exp.Unix(), nil
+	return deleted, token, exp.Unix(), nil
 }
