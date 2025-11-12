@@ -1,5 +1,5 @@
 window.APP_CONFIG = {
-    BASE_URL: "http://core-service:8099",  // внутри docker сети
+    BASE_URL: "http://localhost:8099", // your core-service API
     ENDPOINTS: {
         login: "/users/login",
         register: "/users",

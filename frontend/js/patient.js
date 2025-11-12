@@ -5,8 +5,12 @@ if (!user) {
     location.href = "../index.html";
 }
 
-document.getElementById("patientName").textContent = `${user.firstName} ${user.lastName}`;
-document.getElementById("patientMeta").textContent = user.email;
+const fullName = [user.first_name || user.firstName, user.last_name || user.lastName]
+    .filter(Boolean)
+    .join(" ") || "Patient";
+
+document.getElementById("patientName").textContent = fullName;
+document.getElementById("patientMeta").textContent = user.email || "";
 
 async function loadDiagnoses() {
     const container = document.getElementById("diagnosesList");
@@ -17,16 +21,16 @@ async function loadDiagnoses() {
             ? list
                 .map(
                     (d) => `
-          <div class="diagnosis-item">
-            <div>
-              <h4>${d.diagnosis || "Без названия"}</h4>
-              <p class="diagnosis-meta">Date: ${new Date(d.createdAt).toLocaleDateString()}</p>
-            </div>
-            <button class="link-btn" data-id="${d.id}">🗑</button>
-          </div>`
+            <div class="diagnosis-item">
+                <div>
+                    <h4>${d.diagnosis || "Untitled"}</h4>
+                    <p class="diagnosis-meta">Date: ${new Date(d.createdAt).toLocaleDateString()}</p>
+                </div>
+                <button class="link-btn" data-id="${d.id}">🗑</button>
+            </div>`
                 )
                 .join("")
-            : `<p class="text-gray">Нет диагнозов</p>`;
+            : `<p class="text-gray">No diagnoses found</p>`;
 
         container.querySelectorAll(".link-btn").forEach((btn) =>
             btn.addEventListener("click", async () => {
@@ -35,7 +39,7 @@ async function loadDiagnoses() {
             })
         );
     } catch (err) {
-        container.innerHTML = `<p class="text-gray">Ошибка загрузки: ${err.message}</p>`;
+        container.innerHTML = `<p class="text-gray">Error loading data: ${err.message}</p>`;
     }
 }
 

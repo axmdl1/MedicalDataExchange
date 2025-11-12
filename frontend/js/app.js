@@ -1,19 +1,20 @@
 import { apiLogin, apiRegister } from "./api.js";
 
+// LOGIN
 document.getElementById("login-form").onsubmit = async (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
     try {
         const data = await apiLogin(email, password);
-        localStorage.setItem("user", JSON.stringify(data.user || data));
-        alert("Вход выполнен");
+        alert("Login successful");
         location.href = "pages/patient.html";
     } catch (err) {
-        alert("Ошибка входа: " + err.message);
+        alert("Login failed: " + err.message);
     }
 };
 
+// REGISTER
 document.getElementById("register-form").onsubmit = async (e) => {
     e.preventDefault();
     const user = {
@@ -25,11 +26,16 @@ document.getElementById("register-form").onsubmit = async (e) => {
     };
     try {
         await apiRegister(user);
-        alert("Регистрация успешна! Теперь войдите.");
+        alert("Registration successful! Please sign in.");
+        // ✅ redirect to login section
+        document.getElementById("register-section").classList.add("hidden");
+        document.getElementById("login-section").classList.remove("hidden");
     } catch (err) {
-        alert("Ошибка регистрации: " + err.message);
+        alert("Registration failed: " + err.message);
     }
 };
+
+// SWITCH login/register
 document.addEventListener("DOMContentLoaded", () => {
     const loginSection = document.getElementById("login-section");
     const registerSection = document.getElementById("register-section");
