@@ -12,7 +12,9 @@ RUN cd core-service && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/co
 # ---------- runtime ----------
 FROM gcr.io/distroless/base-debian12
 WORKDIR /app
-COPY core-service/config/docker.yaml /app/config/docker.yaml
+
+# положим ДОКЕРНЫЙ конфиг так, как его ищет код (local.yaml)
+COPY core-service/config/docker.yaml /app/config/local.yaml
 COPY --from=builder /out/core /app/core
 
 EXPOSE 8099
