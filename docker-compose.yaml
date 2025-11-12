@@ -46,7 +46,6 @@ services:
     build:
       context: .
       dockerfile: core-service/Dockerfile
-    # dockerfile: core-service/Dockerfile  # если Dockerfile у core в стандартном месте — можно опустить
     container_name: mde-core
     depends_on:
       - user-service
@@ -54,6 +53,27 @@ services:
     ports:
       - "8099:8099"
     networks: [mednet]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mde-frontend
+    depends_on:
+      - core-service
+    ports:
+      - "8080:80"
+    networks: [mednet]
+  info:
+      image: alpine
+      command: >
+        sh -c "echo '🌐 Frontend доступен:  http://localhost:8080'
+        && echo '🔌 Core API работает:  http://localhost:8099'
+        && echo '✅ Всё готово! Можно открывать браузер 🚀'"
+      depends_on:
+        - frontend
+      networks: [ mednet ]
+
 
 volumes:
   pgdata:
