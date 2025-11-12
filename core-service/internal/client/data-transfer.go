@@ -14,6 +14,7 @@ func NewDataTransferClient(addr string) (*DataTransferClient, error) {
 	conn, err := grpc.NewClient(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(AuthInterceptor()),
 	)
 	if err != nil {
 		return nil, err

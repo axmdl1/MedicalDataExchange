@@ -7,6 +7,7 @@ import (
 	"github.com/axmdl1/MedicalDataExchange/core-service/internal/client"
 	"github.com/axmdl1/MedicalDataExchange/core-service/internal/config"
 	"github.com/axmdl1/MedicalDataExchange/core-service/internal/handler"
+	"github.com/axmdl1/MedicalDataExchange/core-service/internal/middleware"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -22,6 +23,9 @@ func New(cfg config.Config) *App {
 	hUser := handler.NewUserHandler(uClient.API)
 
 	r := chi.NewRouter()
+
+	// Добавляем middleware для извлечения Authorization header
+	r.Use(middleware.ExtractAuthToken)
 
 	// MedicalData
 	r.Route("/medical-data", func(r chi.Router) {
