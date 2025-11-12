@@ -1,0 +1,289 @@
+openapi: 3.0.3
+info:
+  title: MedicalDataExchange — Core REST (Users)
+  version: 0.0.1
+  description: >
+    REST-шлюз core-service, проксирующий gRPC user-service.
+    Защищённые ручки требуют Bearer JWT (выдаётся user-service /users/login).
+servers:
+  - url: http://localhost:8099
+
+tags:
+  - name: Users
+    description: CRUD пользователей + аутентификация
+
+paths:
+  /users:
+    post:
+      tags: [Users]
+      summary: Create user (patient publicly; employee/admin under token)
+      description: |
+        Публично разрешена **self-registration** только для `patient` без `clinic_id`.
+
+        С токеном:
+        - `admin` может создавать любого пользователя;
+        - `employee` — только `patient` в своей клинике (clinic_id обязателен и должен быть его).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserBody' }
+            examples:
+              patient_public:
+                summary: Register patient (public)
+                value:
+                  user:
+                    first_name: Ali
+                    last_name: Med
+                    email: ali@test.com
+                    phone_number: "+998901234567"
+                    type: patient
+                    password: "123456"
+              employee_by_admin:
+                summary: Create employee (admin token)
+                value:
+                  user:
+                    first_name: Sara
+                    last_name: Nurse
+                    email: sara@clinic.com
+                    phone_number: "+998908888888"
+                    type: employee
+                    password: "123456"
+                    clinic_id: { value: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreateUserResponse' }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized (missing/invalid token when required) }
+        '403': { description: Forbidden by role rules }
+        '409': { description: Email already used }
+      security:
+        - bearerAuth: []  # токен может присутствовать (для employee/admin)
+    get:
+      tags: [Users]
+      summary: List users
+      description: |
+        Требуется токен admin/employee.
+        - employee видит только свою клинику (clinic_id принудительно подставится из токена).
+      parameters:
+        - in: query
+          name: clinic_id
+          schema: { type: integer, format: int64 }
+          required: false
+        - in: query
+          name: type
+          schema: { type: string, enum: [patient, employee, admin] }
+          required: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListUsersResponse' }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+      security:
+        - bearerAuth: []
+
+  /users/login:
+    post:
+      tags: [Users]
+      summary: Login
+      description: |
+        Возвращает access_token (JWT), содержащий: `sub` (id), `role`, `clinic_id` (для employee), `email`, `exp`, `iat`, `iss`.
+        Если пользователь soft-deleted и ввёл верный пароль — аккаунт автоматически восстанавливается (reactivate).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+            example:
+              email: admin@system.com
+              password: admin123
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '401': { description: Invalid credentials }
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by id
+      description: |
+        Требуется токен.  
+        - patient — может смотреть только себя;  
+        - employee — себя и пациентов своей клиники;  
+        - admin — любое id.
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GetUserResponse' }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+      security:
+        - bearerAuth: []
+    patch:
+      tags: [Users]
+      summary: Update user (partial update semantics)
+      description: |
+        Частичное обновление: передавай **только** поля, которые нужно изменить.
+        Незаполненные поля сохранятся как были.  
+        Правила:
+        - patient: может менять только себя, нельзя менять type/clinic_id;  
+        - employee: может менять только пациентов своей клиники, не меняет type/clinic_id;  
+        - admin: без ограничений.
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdateBody' }
+            example:
+              first_name: Ali
+              phone_number: "+998909999999"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UpdateUserResponse' }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+      security:
+        - bearerAuth: []
+    delete:
+      tags: [Users]
+      summary: Delete user (soft delete)
+      description: |
+        Soft delete — помечает пользователя как удалённого.  
+        Поведение уникальности email лучше настроить частичным индексом (уникальность только для active).
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeleteUserResponse' }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+      security:
+        - bearerAuth: []
+
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PathId:
+      in: path
+      name: id
+      required: true
+      schema: { type: integer, format: int64 }
+      description: User id
+
+  schemas:
+    ClinicID:
+      type: object
+      nullable: true
+      properties:
+        value: { type: integer, format: int64 }
+
+    User:
+      type: object
+      properties:
+        id:           { type: integer, format: int64 }
+        first_name:   { type: string }
+        last_name:    { type: string }
+        email:        { type: string, format: email }
+        phone_number: { type: string }
+        type:         { type: string, enum: [patient, employee, admin] }
+        clinic_id:    { $ref: '#/components/schemas/ClinicID' }
+      required: [first_name, last_name, email, type]
+
+    CreateUserBody:
+      type: object
+      properties:
+        user:
+          allOf:
+            - $ref: '#/components/schemas/User'
+            - type: object
+              properties:
+                password: { type: string, writeOnly: true }
+              required: [password]
+      required: [user]
+
+    CreateUserResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+      required: [user]
+
+    GetUserResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+      required: [user]
+
+    UpdateUserResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+      required: [user]
+
+    DeleteUserResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+
+    ListUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items: { $ref: '#/components/schemas/User' }
+
+    UserUpdateBody:
+      type: object
+      description: Частичное обновление — укажи только изменяемые поля.
+      properties:
+        first_name:   { type: string }
+        last_name:    { type: string }
+        email:        { type: string, format: email }
+        phone_number: { type: string }
+        type:         { type: string, enum: [patient, employee, admin] }
+        clinic_id:    { $ref: '#/components/schemas/ClinicID' }
+        password:     { type: string, writeOnly: true }
+
+    LoginRequest:
+      type: object
+      properties:
+        email:    { type: string, format: email }
+        password: { type: string }
+      required: [email, password]
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        user:         { $ref: '#/components/schemas/User' }
+      required: [access_token, user]

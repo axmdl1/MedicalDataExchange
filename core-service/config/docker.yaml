@@ -1,0 +1,6 @@
+rest:
+  port: 8099
+
+grpc:
+  data_transfer: "data-transfer-service:50052"
+  user: "user-service:50053"

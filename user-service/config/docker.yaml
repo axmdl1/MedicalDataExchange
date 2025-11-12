@@ -1,0 +1,9 @@
+grpc:
+  port: ":50053"
+
+postgres:
+  dsn: "host=postgres user=postgres password=postgres dbname=medical port=5432 sslmode=disable"
+
+auth:
+  jwt_secret: "super-secret"
+  ttl_min: 720
