@@ -24,6 +24,9 @@ func New(cfg config.Config) *App {
 
 	r := chi.NewRouter()
 
+	// Добавляем CORS middleware (должен быть первым!)
+	r.Use(middleware.CORS)
+
 	// Добавляем middleware для извлечения Authorization header
 	r.Use(middleware.ExtractAuthToken)
 
