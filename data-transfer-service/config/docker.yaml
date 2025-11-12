@@ -3,3 +3,6 @@ server:
 
 database:
   url: "host=postgres user=postgres password=postgres dbname=medical port=5432 sslmode=disable"
+
+auth:
+  jwt_secret: "supersecret"

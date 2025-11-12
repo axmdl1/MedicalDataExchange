@@ -14,8 +14,14 @@ type App struct {
 	port int
 }
 
-func New(port int, svc service.DataTransferService) *App {
-	s := grpc.NewServer() // чистый сервер, без интерцепторов
+func New(port int, svc service.DataTransferService, jwtManager *service.JWTManager) *App {
+	// Создаем gRPC сервер с интерцепторами для JWT и RBAC
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			grpcapi.AuthInterceptor(jwtManager),
+			grpcapi.RBACInterceptor(),
+		),
+	)
 	grpcapi.RegisterServerAPI(s, svc)
 
 	return &App{
