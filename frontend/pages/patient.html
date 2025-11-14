@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Record</title>
+    <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <aside class="sidebar">
+        <div class="logo"><span class="logo-icon">🏥</span></div>
+        <nav class="sidebar-nav">
+            <a href="patient.html" class="nav-item active"><span class="icon">📋</span> Medical data </a>
+            <a href="../index.html" class="nav-item"><span class="icon">🚪</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content patient-viewer">
+        <div class="page-header">
+            <h1>Patient Information</h1>
+            <button id="refreshBtn" class="icon-btn">🔄</button>
+        </div>
+
+        <div class="patient-layout">
+            <div class="patient-info-card">
+                <div class="patient-header">
+                    <div class="patient-avatar">👤</div>
+                    <div class="patient-details">
+                        <h2 id="patientName">Loading...</h2>
+                        <p id="patientMeta">...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diagnoses-section">
+                <h2>Diagnoses</h2>
+                <div id="diagnosesList" class="diagnoses-list">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module" src="../js/patient.js"></script>
+</body>
+</html>
