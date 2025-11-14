@@ -37,3 +37,18 @@ type DataTransfer struct {
 func (DataTransfer) TableName() string {
 	return "data_transfer"
 }
+
+// Clinic — клиника
+type Clinic struct {
+	ID        int64     `gorm:"column:id;primaryKey"`
+	Name      string    `gorm:"column:name"`
+	Address   string    `gorm:"column:address"`
+	Phone     string    `gorm:"column:phone"`
+	Email     string    `gorm:"column:email"`
+	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"`
+	UpdatedAt time.Time `gorm:"column:updated_at;autoUpdateTime"`
+}
+
+func (Clinic) TableName() string {
+	return "clinics"
+}

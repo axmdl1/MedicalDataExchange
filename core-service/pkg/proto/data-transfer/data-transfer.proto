@@ -18,6 +18,13 @@ service DataTransferService {
 
   // Пациент подтверждает или отклоняет запрос
   rpc HandleDataTransferDecision(HandleDataTransferDecisionRequest) returns (HandleDataTransferDecisionResponse);
+
+  // --- Clinic CRUD ---
+  rpc CreateClinic(CreateClinicRequest) returns (CreateClinicResponse);
+  rpc GetClinic(GetClinicRequest) returns (GetClinicResponse);
+  rpc UpdateClinic(UpdateClinicRequest) returns (UpdateClinicResponse);
+  rpc DeleteClinic(DeleteClinicRequest) returns (DeleteClinicResponse);
+  rpc ListClinics(ListClinicsRequest) returns (ListClinicsResponse);
 }
 
 // --- Entities ---
@@ -122,4 +129,57 @@ message HandleDataTransferDecisionRequest {
 
 message HandleDataTransferDecisionResponse {
   DataTransfer transfer = 1;
+}
+
+// --- Clinic Entity ---
+
+message Clinic {
+  int64 id = 1;
+  string name = 2;
+  string address = 3;
+  string phone = 4;
+  string email = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+// --- Clinic messages ---
+
+message CreateClinicRequest {
+  Clinic clinic = 1;
+}
+
+message CreateClinicResponse {
+  Clinic clinic = 1;
+}
+
+message GetClinicRequest {
+  int64 id = 1;
+}
+
+message GetClinicResponse {
+  Clinic clinic = 1;
+}
+
+message UpdateClinicRequest {
+  Clinic clinic = 1;
+}
+
+message UpdateClinicResponse {
+  Clinic clinic = 1;
+}
+
+message DeleteClinicRequest {
+  int64 id = 1;
+}
+
+message DeleteClinicResponse {
+  bool success = 1;
+}
+
+message ListClinicsRequest {
+}
+
+message ListClinicsResponse {
+  repeated Clinic clinics = 1;
 }

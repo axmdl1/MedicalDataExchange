@@ -2,6 +2,8 @@ package grpc
 
 import (
 	"context"
+	"log"
+	"reflect"
 	"strings"
 
 	"github.com/axmdl1/MedicalDataExchange/data-transfer-service/internal/service"
@@ -18,27 +20,19 @@ const (
 	UserRoleKey contextKey = "user_role"
 )
 
-// AuthInterceptor проверяет JWT токен и добавляет claims в context
+// AuthInterceptor
 func AuthInterceptor(jwtManager *service.JWTManager) grpc.UnaryServerInterceptor {
-	return func(
-		ctx context.Context,
-		req interface{},
-		info *grpc.UnaryServerInfo,
-		handler grpc.UnaryHandler,
-	) (interface{}, error) {
-		// Извлекаем metadata из контекста
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return nil, status.Error(codes.Unauthenticated, "missing metadata")
 		}
 
-		// Извлекаем Authorization header
 		values := md.Get("authorization")
 		if len(values) == 0 {
 			return nil, status.Error(codes.Unauthenticated, "missing authorization token")
 		}
 
-		// Извлекаем токен из "Bearer <token>"
 		authHeader := values[0]
 		const prefix = "Bearer "
 		if !strings.HasPrefix(authHeader, prefix) {
@@ -46,53 +40,156 @@ func AuthInterceptor(jwtManager *service.JWTManager) grpc.UnaryServerInterceptor
 		}
 		token := strings.TrimPrefix(authHeader, prefix)
 
-		// Проверяем токен и парсим claims
 		claims, err := jwtManager.ParseClaims(token)
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, "invalid token: "+err.Error())
 		}
 
-		// Добавляем claims в контекст
 		ctx = context.WithValue(ctx, UserIDKey, claims.UserID)
 		ctx = context.WithValue(ctx, UserRoleKey, claims.Role)
 
-		// Продолжаем обработку запроса
+		log.Printf("AUTH: user_id=%d, role=%s", claims.UserID, claims.Role)
 		return handler(ctx, req)
 	}
 }
 
-// RBACInterceptor проверяет права доступа на основе роли
+// RBACInterceptor
 func RBACInterceptor() grpc.UnaryServerInterceptor {
-	return func(
-		ctx context.Context,
-		req interface{},
-		info *grpc.UnaryServerInfo,
-		handler grpc.UnaryHandler,
-	) (interface{}, error) {
-		// Извлекаем роль из контекста
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+
 		role, ok := ctx.Value(UserRoleKey).(string)
 		if !ok {
+			log.Println("RBAC: missing role in context")
 			return nil, status.Error(codes.PermissionDenied, "missing role in context")
 		}
 
-		// Проверяем права доступа
-		// Только employee и admin могут работать с медицинскими данными
-		if role != "employee" && role != "admin" {
-			return nil, status.Error(codes.PermissionDenied, "insufficient permissions")
+		userID, _ := ctx.Value(UserIDKey).(int64)
+		method := info.FullMethod
+
+		log.Printf("RBAC: method=%s, role=%s, user_id=%d", method, role, userID)
+
+		// Создание записей
+		if strings.Contains(method, "CreateMedicalData") {
+			if role == "patient" {
+				log.Println("RBAC: patient tried to create medical data → denied")
+				return nil, status.Error(codes.PermissionDenied, "patients cannot create medical records")
+			}
+			log.Println("RBAC: employee/admin → create allowed")
+			return handler(ctx, req)
 		}
 
-		// Продолжаем обработку запроса
-		return handler(ctx, req)
+		// employee / admin
+		if role == "employee" || role == "admin" {
+			log.Println("RBAC: employee/admin → full access")
+			return handler(ctx, req)
+		}
+
+		// patient
+		if role == "patient" {
+			log.Println("RBAC: patient access check")
+
+			hasID := hasUserIDInRequest(req)
+			log.Printf("RBAC: hasUserIDInRequest = %v", hasID)
+
+			if hasID {
+				matches := userIDMatches(req, userID)
+				log.Printf("RBAC: userIDMatches = %v (expected: %d)", matches, userID)
+				if !matches {
+					log.Println("RBAC: user_id mismatch → denied")
+					return nil, status.Error(codes.PermissionDenied, "you can only access your own data")
+				}
+			} else {
+				log.Println("RBAC: no user_id in request → allowing (service will auto-fill)")
+			}
+
+			log.Println("RBAC: patient access granted")
+			return handler(ctx, req)
+		}
+
+		log.Println("RBAC: unknown role → denied")
+		return nil, status.Error(codes.PermissionDenied, "insufficient permissions")
 	}
 }
 
-// GetUserID извлекает user_id из контекста
+// hasUserIDInRequest — проверяет, заполнено ли поле user_id
+func hasUserIDInRequest(req interface{}) bool {
+	v := reflect.ValueOf(req)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		log.Println("RBAC: req is not struct")
+		return false
+	}
+
+	log.Printf("RBAC: checking request type: %s", v.Type().Name())
+
+	// Проверяем UserId (protobuf генерирует как UserId)
+	if f := v.FieldByName("UserId"); f.IsValid() {
+		// Используем Interface() + приведение
+		if val, ok := f.Interface().(int64); ok && val != 0 {
+			log.Printf("RBAC: UserId = %d (via Interface)", val)
+			return true
+		}
+		log.Printf("RBAC: UserId is zero or not int64")
+	}
+
+	// Проверяем в Filter
+	if filter := v.FieldByName("Filter"); filter.IsValid() && !filter.IsNil() {
+		log.Println("RBAC: found Filter")
+		if filter.Kind() == reflect.Ptr {
+			filter = filter.Elem()
+		}
+		if f := filter.FieldByName("UserId"); f.IsValid() {
+			if val, ok := f.Interface().(int64); ok && val != 0 {
+				log.Printf("RBAC: Filter.UserId = %d", val)
+				return true
+			}
+		}
+	}
+
+	log.Println("RBAC: no user_id found")
+	return false
+}
+
+// userIDMatches — сравнивает user_id с expected
+func userIDMatches(req interface{}, expected int64) bool {
+	v := reflect.ValueOf(req)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	// Проверяем UserId
+	if f := v.FieldByName("UserId"); f.IsValid() {
+		if val, ok := f.Interface().(int64); ok {
+			log.Printf("RBAC: UserId = %d, expected = %d", val, expected)
+			return val == expected
+		}
+	}
+
+	// Проверяем в Filter
+	if filter := v.FieldByName("Filter"); filter.IsValid() && !filter.IsNil() {
+		if filter.Kind() == reflect.Ptr {
+			filter = filter.Elem()
+		}
+		if f := filter.FieldByName("UserId"); f.IsValid() {
+			if val, ok := f.Interface().(int64); ok {
+				log.Printf("RBAC: Filter.UserId = %d, expected = %d", val, expected)
+				return val == expected
+			}
+		}
+	}
+
+	log.Println("RBAC: no user_id field found for comparison")
+	return false
+}
+
+// GetUserID / GetUserRole
 func GetUserID(ctx context.Context) (int64, bool) {
 	userID, ok := ctx.Value(UserIDKey).(int64)
 	return userID, ok
 }
 
-// GetUserRole извлекает роль из контекста
 func GetUserRole(ctx context.Context) (string, bool) {
 	role, ok := ctx.Value(UserRoleKey).(string)
 	return role, ok

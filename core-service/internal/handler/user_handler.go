@@ -37,15 +37,40 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 
 // POST /users
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	// Temporary struct for JSON decoding
 	var req struct {
-		User userv1.User `json:"user"`
+		User struct {
+			ID          int64  `json:"id"`
+			FirstName   string `json:"first_name"`
+			LastName    string `json:"last_name"`
+			Email       string `json:"email"`
+			PhoneNumber string `json:"phone_number"`
+			Type        string `json:"type"`
+			Password    string `json:"password"`
+			ClinicID    *int64 `json:"clinic_id"` // nullable int64
+		} `json:"user"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// Convert to protobuf User
+	protoUser := &userv1.User{
+		Id:          req.User.ID,
+		FirstName:   req.User.FirstName,
+		LastName:    req.User.LastName,
+		Email:       req.User.Email,
+		PhoneNumber: req.User.PhoneNumber,
+		Type:        req.User.Type,
+		Password:    req.User.Password,
+	}
+	if req.User.ClinicID != nil {
+		protoUser.ClinicId = wrapperspb.Int64(*req.User.ClinicID)
+	}
+
 	ctx := metadata.NewOutgoingContext(r.Context(), mdFromRequest(r))
-	resp, err := h.Client.CreateUser(ctx, &userv1.CreateUserRequest{User: &req.User})
+	resp, err := h.Client.CreateUser(ctx, &userv1.CreateUserRequest{User: protoUser})
 	if err != nil {
 		http.Error(w, err.Error(), httpStatusFromErr(err))
 		return

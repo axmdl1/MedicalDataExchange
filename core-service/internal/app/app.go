@@ -18,6 +18,7 @@ type App struct {
 func New(cfg config.Config) *App {
 	dtClient, _ := client.NewDataTransferClient(cfg.GRPC.DataTransfer)
 	h := handler.NewDataTransferHandler(dtClient)
+	hClinic := handler.NewClinicHandler(dtClient)
 
 	uClient, _ := client.NewUserClient(cfg.GRPC.User)
 	hUser := handler.NewUserHandler(uClient.API)
@@ -44,6 +45,15 @@ func New(cfg config.Config) *App {
 		r.Get("/", h.ListDataTransfers)
 		r.Get("/{id}", h.GetDataTransfer)
 		r.Post("/decision", h.HandleDecision)
+	})
+
+	// Clinics
+	r.Route("/clinics", func(r chi.Router) {
+		r.Post("/", hClinic.CreateClinic)
+		r.Get("/", hClinic.ListClinics)
+		r.Get("/{id}", hClinic.GetClinic)
+		r.Patch("/{id}", hClinic.UpdateClinic)
+		r.Delete("/{id}", hClinic.DeleteClinic)
 	})
 
 	//Users

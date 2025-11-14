@@ -49,12 +49,15 @@ func (s *Server) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) 
 	} else {
 		switch claims.Role {
 		case "employee":
-			// сотрудник может создавать только пациентов своей клиники
-			if u.Type != "patient" {
-				return nil, status.Error(codes.PermissionDenied, "employees can create only patients")
+			// сотрудник может создавать пациентов и других сотрудников своей клиники
+			if u.Type == "admin" {
+				return nil, status.Error(codes.PermissionDenied, "employees cannot create admins")
 			}
-			if claims.ClinicID == nil || u.ClinicID == nil || *claims.ClinicID != *u.ClinicID {
-				return nil, status.Error(codes.PermissionDenied, "clinic mismatch")
+			// Для patient и employee - проверяем clinic_id
+			if u.Type == "employee" || u.Type == "patient" {
+				if claims.ClinicID == nil || u.ClinicID == nil || *claims.ClinicID != *u.ClinicID {
+					return nil, status.Error(codes.PermissionDenied, "clinic mismatch")
+				}
 			}
 		case "admin":
 			// без ограничений

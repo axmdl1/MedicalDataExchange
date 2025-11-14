@@ -36,7 +36,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	fmt.Printf("gRPC server running on :%d\n", a.port)
+	fmt.Printf("gRP server running on :%d\n", a.port)
 	return a.srv.Serve(lis)
 }
 

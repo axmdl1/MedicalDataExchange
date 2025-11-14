@@ -20,6 +20,13 @@ type DataTransferRepository interface {
 	GetDataTransfer(ctx context.Context, id int64) (*model.DataTransfer, error)
 	ListDataTransfers(ctx context.Context, clinicID, userID *int64, status *string) ([]model.DataTransfer, error)
 	UpdateDataTransfer(ctx context.Context, transfer *model.DataTransfer) error
+
+	// Clinic CRUD
+	CreateClinic(ctx context.Context, clinic *model.Clinic) error
+	GetClinic(ctx context.Context, id int64) (*model.Clinic, error)
+	UpdateClinic(ctx context.Context, clinic *model.Clinic) error
+	DeleteClinic(ctx context.Context, id int64) error
+	ListClinics(ctx context.Context) ([]model.Clinic, error)
 }
 
 type dataTransferRepo struct {
@@ -99,4 +106,33 @@ func (r *dataTransferRepo) ListDataTransfers(ctx context.Context, clinicID, user
 func (r *dataTransferRepo) UpdateDataTransfer(ctx context.Context, transfer *model.DataTransfer) error {
 	transfer.UpdatedAt = time.Now()
 	return r.db.WithContext(ctx).Save(transfer).Error
+}
+
+// --- Clinic ---
+func (r *dataTransferRepo) CreateClinic(ctx context.Context, clinic *model.Clinic) error {
+	return r.db.WithContext(ctx).Create(clinic).Error
+}
+
+func (r *dataTransferRepo) GetClinic(ctx context.Context, id int64) (*model.Clinic, error) {
+	var clinic model.Clinic
+	if err := r.db.WithContext(ctx).First(&clinic, id).Error; err != nil {
+		return nil, err
+	}
+	return &clinic, nil
+}
+
+func (r *dataTransferRepo) UpdateClinic(ctx context.Context, clinic *model.Clinic) error {
+	return r.db.WithContext(ctx).Save(clinic).Error
+}
+
+func (r *dataTransferRepo) DeleteClinic(ctx context.Context, id int64) error {
+	return r.db.WithContext(ctx).Delete(&model.Clinic{}, id).Error
+}
+
+func (r *dataTransferRepo) ListClinics(ctx context.Context) ([]model.Clinic, error) {
+	var clinics []model.Clinic
+	if err := r.db.WithContext(ctx).Find(&clinics).Error; err != nil {
+		return nil, err
+	}
+	return clinics, nil
 }

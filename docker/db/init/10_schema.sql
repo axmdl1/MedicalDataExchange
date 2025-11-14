@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS clinics (
                                        id BIGSERIAL PRIMARY KEY,
                                        name VARCHAR(255) NOT NULL,
     address TEXT,
-    phone_number VARCHAR(20),
+    phone VARCHAR(20),
+    email VARCHAR(255),
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
     );

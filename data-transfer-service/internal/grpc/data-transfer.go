@@ -120,7 +120,8 @@ func (s *serverAPI) ListDataTransfers(ctx context.Context, req *dtpb.ListDataTra
 
 	resp, err := s.dataTransferService.ListDataTransfers(ctx, req.ClinicId, req.UserId, statusFilter)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to list data transfers: %v", err)
+		return nil,
+			status.Errorf(codes.Internal, "failed to list data transfers: %v", err)
 	}
 
 	return &dtpb.ListDataTransfersResponse{Transfers: resp}, nil
@@ -137,4 +138,78 @@ func (s *serverAPI) HandleDataTransferDecision(ctx context.Context, req *dtpb.Ha
 	}
 
 	return &dtpb.HandleDataTransferDecisionResponse{Transfer: resp}, nil
+}
+
+// --- Clinic ---
+
+func (s *serverAPI) CreateClinic(ctx context.Context, req *dtpb.CreateClinicRequest) (*dtpb.CreateClinicResponse, error) {
+	log := zerolog.Ctx(ctx).With().
+		Str("component", "data_transfer_grpc").
+		Str("method", "CreateClinic").
+		Logger()
+
+	if req.Clinic == nil {
+		return nil, status.Error(codes.InvalidArgument, "clinic is required")
+	}
+
+	resp, err := s.dataTransferService.CreateClinic(ctx, req.Clinic)
+	if err != nil {
+		log.Error().Err(err).Msg("service_failed")
+		return nil, status.Errorf(codes.Internal, "failed to create clinic: %v", err)
+	}
+
+	return &dtpb.CreateClinicResponse{Clinic: resp}, nil
+}
+
+func (s *serverAPI) GetClinic(ctx context.Context, req *dtpb.GetClinicRequest) (*dtpb.GetClinicResponse, error) {
+	if req.Id == 0 {
+		return nil, status.Error(codes.InvalidArgument, "id is required")
+	}
+
+	resp, err := s.dataTransferService.GetClinic(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get clinic: %v", err)
+	}
+
+	return &dtpb.GetClinicResponse{Clinic: resp}, nil
+}
+
+func (s *serverAPI) UpdateClinic(ctx context.Context, req *dtpb.UpdateClinicRequest) (*dtpb.UpdateClinicResponse, error) {
+	log := zerolog.Ctx(ctx).With().
+		Str("component", "data_transfer_grpc").
+		Str("method", "UpdateClinic").
+		Logger()
+
+	if req.Clinic == nil || req.Clinic.Id == 0 {
+		return nil, status.Error(codes.InvalidArgument, "clinic with id is required")
+	}
+
+	resp, err := s.dataTransferService.UpdateClinic(ctx, req.Clinic)
+	if err != nil {
+		log.Error().Err(err).Msg("service_failed")
+		return nil, status.Errorf(codes.Internal, "failed to update clinic: %v", err)
+	}
+
+	return &dtpb.UpdateClinicResponse{Clinic: resp}, nil
+}
+
+func (s *serverAPI) DeleteClinic(ctx context.Context, req *dtpb.DeleteClinicRequest) (*dtpb.DeleteClinicResponse, error) {
+	if req.Id == 0 {
+		return nil, status.Error(codes.InvalidArgument, "id is required")
+	}
+
+	if err := s.dataTransferService.DeleteClinic(ctx, req.Id); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to delete clinic: %v", err)
+	}
+
+	return &dtpb.DeleteClinicResponse{Success: true}, nil
+}
+
+func (s *serverAPI) ListClinics(ctx context.Context, req *dtpb.ListClinicsRequest) (*dtpb.ListClinicsResponse, error) {
+	resp, err := s.dataTransferService.ListClinics(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to list clinics: %v", err)
+	}
+
+	return &dtpb.ListClinicsResponse{Clinics: resp}, nil
 }
