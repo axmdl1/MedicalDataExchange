@@ -10,7 +10,7 @@ services:
       - "5442:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+      - ./backend/docker/db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d medical"]
       interval: 5s
@@ -20,8 +20,8 @@ services:
 
   user-service:
     build:
-      context: .
-      dockerfile: backend/user-service/Dockerfile
+      context: ./backend          # 👈 контекст — папка backend
+      dockerfile: user-service/Dockerfile
     container_name: mde-user
     depends_on:
       postgres:
@@ -32,8 +32,8 @@ services:
 
   data-transfer-service:
     build:
-      context: .
-      dockerfile: backend/data-transfer-service/Dockerfile
+      context: ./backend
+      dockerfile: data-transfer-service/Dockerfile
     container_name: mde-dt
     depends_on:
       postgres:
@@ -44,8 +44,8 @@ services:
 
   core-service:
     build:
-      context: .
-      dockerfile: backend/core-service/Dockerfile
+      context: ./backend
+      dockerfile: core-service/Dockerfile
     container_name: mde-core
     depends_on:
       - user-service
@@ -64,16 +64,16 @@ services:
     ports:
       - "8080:80"
     networks: [mednet]
-  info:
-      image: alpine
-      command: >
-        sh -c "echo '🌐 Frontend доступен:  http://localhost:8080'
-        && echo '🔌 Core API работает:  http://localhost:8099'
-        && echo '✅ Всё готово! Можно открывать браузер 🚀'"
-      depends_on:
-        - frontend
-      networks: [ mednet ]
 
+  info:
+    image: alpine
+    command: >
+      sh -c "echo '🌐 Frontend:  http://localhost:8080'
+      && echo '🔌 Core API:  http://localhost:8099'
+      && echo '✅ Всё готово! Открывай браузер 🚀'"
+    depends_on:
+      - frontend
+    networks: [mednet]
 
 volumes:
   pgdata:
