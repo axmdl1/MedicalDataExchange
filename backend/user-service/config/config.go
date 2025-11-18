@@ -7,7 +7,7 @@ type GRPC struct {
 type Postgres struct {
 	DSN string `yaml:"dsn"`
 }
-
+// auth
 type Auth struct {
 	JWTSecret string `yaml:"jwt_secret"`
 	TTLMin    int    `yaml:"ttl_min"`
