@@ -1,12 +1,11 @@
 package config
 
-type GRPC struct {
-	Port string `yaml:"port"`
-}
-// db
+
 type Postgres struct {
 	DSN string `yaml:"dsn"`
 }
+
+
 // auth
 type Auth struct {
 	JWTSecret string `yaml:"jwt_secret"`
@@ -19,3 +18,10 @@ type Config struct {
 	Postgres Postgres `yaml:"postgres"`
 	Auth     Auth     `yaml:"auth"`
 }
+
+type GRPC struct {
+	Port string `yaml:"port"`
+}
+
+
+
