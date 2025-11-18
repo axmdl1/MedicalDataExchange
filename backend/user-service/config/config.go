@@ -13,6 +13,7 @@ type Auth struct {
 	TTLMin    int    `yaml:"ttl_min"`
 }
 
+// config
 type Config struct {
 	GRPC     GRPC     `yaml:"grpc"`
 	Postgres Postgres `yaml:"postgres"`
