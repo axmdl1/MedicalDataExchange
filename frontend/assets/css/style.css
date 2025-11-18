@@ -498,3 +498,211 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Temporary Access Styles */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.info-text {
+    background: var(--info-bg);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: var(--info-text);
+}
+
+.request-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--border-color);
+}
+
+.request-card.status-pending {
+    border-left-color: #f39c12;
+}
+
+.request-card.status-approved {
+    border-left-color: #27ae60;
+}
+
+.request-card.status-rejected {
+    border-left-color: #e74c3c;
+}
+
+.request-card.status-expired {
+    border-left-color: #95a5a6;
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.request-id {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-pending {
+    background: #f39c12;
+    color: white;
+}
+
+.badge-approved {
+    background: #27ae60;
+    color: white;
+}
+
+.badge-rejected {
+    background: #e74c3c;
+    color: white;
+}
+
+.badge-expired {
+    background: #95a5a6;
+    color: white;
+}
+
+.request-details p {
+    margin: 6px 0;
+    font-size: 14px;
+}
+
+.request-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #229954;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.data-display {
+    margin-top: 20px;
+}
+
+.timer-box {
+    background: #e74c3c;
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.timer-box i {
+    margin-right: 8px;
+}
+
+.medical-data-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.medical-data-box h4 {
+    margin-bottom: 16px;
+    color: var(--primary-color);
+}
+
+.medical-data-box p {
+    margin: 8px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.medical-data-box p:last-child {
+    border-bottom: none;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+    --info-bg: #2c3e50;
+    --info-text: #ecf0f1;
+    --card-bg: #2c3e50;
+    --border-color: #34495e;
+}
+
+[data-theme="light"] {
+    --info-bg: #e8f4f8;
+    --info-text: #2c3e50;
+    --card-bg: white;
+    --border-color: #e0e0e0;
+}

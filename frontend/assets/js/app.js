@@ -76,6 +76,12 @@ class App {
             case 'create-transfer':
                 this.renderCreateTransfer();
                 break;
+            case 'temporary-access':
+                this.renderTemporaryAccess().catch(err => {
+                    console.error('Error rendering temporary access:', err);
+                    alert('Error loading temporary access page. Please refresh the page.');
+                });
+                break;
             default:
                 this.renderDashboard();
         }
@@ -92,12 +98,14 @@ class App {
 
         if (role === ROLES.PATIENT) {
             navItems.push({ icon: 'fa-file-medical', label: 'My Medical Data', hash: 'medical-data' });
+            navItems.push({ icon: 'fa-clock', label: 'Temporary Access', hash: 'temporary-access' });
             navItems.push({ icon: 'fa-exchange-alt', label: 'Transfer Requests', hash: 'transfers' });
             navItems.push({ icon: 'fa-history', label: 'Event Log', hash: 'event-log' });
         } else if (role === ROLES.EMPLOYEE) {
             navItems.push({ icon: 'fa-users', label: 'Patients', hash: 'patients' });
             navItems.push({ icon: 'fa-user-tie', label: 'Employees', hash: 'employees' });
             navItems.push({ icon: 'fa-file-medical', label: 'Medical Records', hash: 'medical-data' });
+            navItems.push({ icon: 'fa-clock', label: 'Access Requests', hash: 'temporary-access' });
             navItems.push({ icon: 'fa-exchange-alt', label: 'Data Transfers', hash: 'transfers' });
             navItems.push({ icon: 'fa-hospital', label: 'Clinics', hash: 'clinics' });
             navItems.push({ icon: 'fa-history', label: 'Event Log', hash: 'event-log' });
@@ -2049,6 +2057,593 @@ class App {
             option.textContent = "Failed to load clinics";
             option.disabled = true;
             select.appendChild(option);
+        }
+    }
+
+    // Render Temporary Access page
+    async renderTemporaryAccess() {
+        try {
+            const role = auth.getRole();
+            const user = auth.getUser();
+
+            if (!user) {
+                window.location.hash = 'login';
+                return;
+            }
+
+            this.appContainer.innerHTML = `
+                ${this.renderSidebar()}
+                <div class="main-content">
+                    <div class="content-area">
+                        <h1><i class="fas fa-clock"></i> Temporary Access to Medical Data</h1>
+
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        ${role === ROLES.PATIENT ? `
+                            <button class="tab-btn active" data-tab="create-request">
+                                <i class="fas fa-paper-plane"></i> Create Request
+                            </button>
+                            <button class="tab-btn" data-tab="my-requests">
+                                <i class="fas fa-list"></i> My Requests
+                            </button>
+                            <button class="tab-btn" data-tab="view-data">
+                                <i class="fas fa-eye"></i> View Data
+                            </button>
+                        ` : ''}
+                        ${role === ROLES.EMPLOYEE ? `
+                            <button class="tab-btn active" data-tab="pending-approvals">
+                                <i class="fas fa-hourglass-half"></i> Pending Approvals
+                            </button>
+                            <button class="tab-btn" data-tab="all-requests">
+                                <i class="fas fa-list"></i> All Requests
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        ${role === ROLES.PATIENT ? this.renderPatientTabs() : ''}
+                        ${role === ROLES.EMPLOYEE ? this.renderEmployeeTabs() : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
+            await this.initializeTemporaryAccessTabs();
+        } catch (err) {
+            console.error('Error in renderTemporaryAccess:', err);
+            this.appContainer.innerHTML = `
+                ${this.renderSidebar()}
+                <div class="main-content">
+                    <div class="content-area">
+                        <h1>Error</h1>
+                        <p>Failed to load temporary access page. Please try refreshing the page.</p>
+                        <p style="color: red; font-size: 12px;">${err.message}</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    renderPatientTabs() {
+        const user = auth.getUser();
+        return `
+            <!-- Create Request Tab -->
+            <div class="tab-pane active" id="create-request">
+                <div class="card">
+                    <h3>Request Temporary Access</h3>
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        Request temporary access to your medical data for 15 minutes.
+                        The clinic must approve your request before you can view the data.
+                    </p>
+                    <form id="create-access-request-form">
+                        <div class="form-group">
+                            <label>Clinic:</label>
+                            <select id="request-clinic" required>
+                                <option value="">Select clinic...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Medical Record:</label>
+                            <select id="request-medical-data" required>
+                                <option value="">Select medical record...</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Send Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- My Requests Tab -->
+            <div class="tab-pane" id="my-requests">
+                <div class="card">
+                    <h3>My Access Requests</h3>
+                    <div id="my-requests-list"></div>
+                </div>
+            </div>
+
+            <!-- View Data Tab -->
+            <div class="tab-pane" id="view-data">
+                <div class="card">
+                    <h3>View Temporary Data</h3>
+                    <form id="view-data-form">
+                        <div class="form-group">
+                            <label>Access Token:</label>
+                            <input type="text" id="access-token"
+                                   placeholder="Paste your access token here..." required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View Data
+                        </button>
+                    </form>
+                    <div id="temporary-data-display"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderEmployeeTabs() {
+        return `
+            <!-- Pending Approvals Tab -->
+            <div class="tab-pane active" id="pending-approvals">
+                <div class="card">
+                    <h3>Requests Awaiting Approval</h3>
+                    <div id="pending-requests-list"></div>
+                </div>
+            </div>
+
+            <!-- All Requests Tab -->
+            <div class="tab-pane" id="all-requests">
+                <div class="card">
+                    <h3>All Access Requests</h3>
+                    <div id="all-requests-list"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    async initializeTemporaryAccessTabs() {
+        const role = auth.getRole();
+        const user = auth.getUser();
+
+        // Tab switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const tabId = btn.dataset.tab;
+
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+
+                btn.classList.add('active');
+                document.getElementById(tabId)?.classList.add('active');
+
+                // Перезагружаем данные при переключении табов для пациента
+                if (role === ROLES.PATIENT) {
+                    if (tabId === 'my-requests') {
+                        await this.loadMyRequests(user.id);
+                    }
+                }
+            });
+        });
+
+        if (role === ROLES.PATIENT) {
+            // Убеждаемся, что используем ID текущего пользователя
+            const currentUser = auth.getUser();
+            if (!currentUser || currentUser.id !== user.id) {
+                console.error('User ID mismatch!');
+                return;
+            }
+
+            // Load clinics for request form
+            await this.loadClinicsForRequest();
+
+            // Setup clinic change handler to filter medical data
+            const clinicSelect = document.getElementById('request-clinic');
+            if (clinicSelect) {
+                // Удаляем старые обработчики, если есть
+                const newClinicSelect = clinicSelect.cloneNode(true);
+                clinicSelect.parentNode.replaceChild(newClinicSelect, clinicSelect);
+                
+                newClinicSelect.addEventListener('change', async (e) => {
+                    const clinicId = e.target.value;
+                    // Загружаем только медицинские данные текущего пациента
+                    if (clinicId) {
+                        await this.loadMedicalDataForRequest(currentUser.id, clinicId);
+                    } else {
+                        await this.loadMedicalDataForRequest(currentUser.id);
+                    }
+                });
+            }
+
+            // Load patient's medical data (только свои данные!)
+            await this.loadMedicalDataForRequest(currentUser.id);
+
+            // Load patient's requests (только свои запросы!)
+            await this.loadMyRequests(currentUser.id);
+
+            // Initialize forms
+            this.initializeCreateRequestForm();
+            this.initializeViewDataForm();
+        } else if (role === ROLES.EMPLOYEE) {
+            // Load pending requests for approval
+            await this.loadPendingRequests();
+
+            // Load all requests
+            await this.loadAllRequests();
+        }
+    }
+
+    async loadClinicsForRequest() {
+        try {
+            const data = await api.getClinics();
+            const select = document.getElementById('request-clinic');
+            
+            if (!select) {
+                console.error('Clinic select element not found');
+                return;
+            }
+
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Select clinic...</option>';
+
+            if (data && data.clinics && Array.isArray(data.clinics)) {
+                data.clinics.forEach(clinic => {
+                    const option = document.createElement('option');
+                    option.value = clinic.id;
+                    option.textContent = clinic.name;
+                    select.appendChild(option);
+                });
+            }
+        } catch (err) {
+            console.error('Failed to load clinics:', err);
+        }
+    }
+
+    async loadMedicalDataForRequest(patientId, clinicId = null) {
+        try {
+            // Используем user_id для фильтрации медицинских данных пациента
+            const filters = { user_id: patientId };
+            if (clinicId) {
+                filters.clinic_id = clinicId;
+            }
+            
+            const data = await api.getMedicalData(filters);
+            const select = document.getElementById('request-medical-data');
+            
+            if (!select) {
+                console.error('Medical data select element not found');
+                return;
+            }
+
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Select medical record...</option>';
+
+            if (data && data.medical_data && Array.isArray(data.medical_data)) {
+                // Дополнительная фильтрация: показываем только данные текущего пациента
+                const currentUser = auth.getUser();
+                const myRecords = currentUser ? data.medical_data.filter(record => {
+                    // Проверяем, что запись принадлежит текущему пациенту
+                    return record.user_id === currentUser.id;
+                }) : [];
+
+                if (myRecords.length === 0) {
+                    select.innerHTML = '<option value="">No medical records found for you</option>';
+                } else {
+                    myRecords.forEach(record => {
+                        const option = document.createElement('option');
+                        option.value = record.id;
+                        option.textContent = `${record.diagnosis || 'Medical Record'} (${new Date(record.created_at).toLocaleDateString()})`;
+                        select.appendChild(option);
+                    });
+                }
+            }
+        } catch (err) {
+            console.error('Failed to load medical data:', err);
+            const select = document.getElementById('request-medical-data');
+            if (select) {
+                select.innerHTML = '<option value="">Error loading medical records</option>';
+            }
+        }
+    }
+
+    initializeCreateRequestForm() {
+        const form = document.getElementById('create-access-request-form');
+        if (!form) {
+            console.error('Create request form not found');
+            return;
+        }
+
+        // Remove existing event listeners by cloning the form
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        const user = auth.getUser();
+        if (!user) {
+            console.error('User not authenticated');
+            return;
+        }
+
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Получаем текущего пользователя заново для безопасности
+            const currentUser = auth.getUser();
+            if (!currentUser) {
+                alert('You must be logged in to create a request');
+                return;
+            }
+
+            const clinicId = document.getElementById('request-clinic').value;
+            const medicalDataId = document.getElementById('request-medical-data').value;
+
+            if (!clinicId || !medicalDataId) {
+                alert('Please select both clinic and medical record');
+                return;
+            }
+
+            try {
+                // Создаем запрос от имени текущего пациента
+                const result = await api.createAccessRequest(currentUser.id, clinicId, medicalDataId);
+                alert(`✅ Request created successfully! Request ID: ${result.request_id}`);
+                newForm.reset();
+                // Перезагружаем список запросов текущего пациента
+                await this.loadMyRequests(currentUser.id);
+                // Перезагружаем список медицинских данных
+                await this.loadMedicalDataForRequest(currentUser.id, clinicId);
+            } catch (err) {
+                alert(`❌ Failed to create request: ${err.message}`);
+            }
+        });
+    }
+
+    async loadMyRequests(patientId) {
+        try {
+            // Убеждаемся, что загружаем запросы только текущего пациента
+            const currentUser = auth.getUser();
+            if (!currentUser || currentUser.id !== patientId) {
+                console.error('Cannot load requests: patient ID mismatch');
+                return;
+            }
+
+            const data = await api.listAccessRequests({ patient_id: patientId });
+            const container = document.getElementById('my-requests-list');
+            
+            if (!container) {
+                console.error('Container my-requests-list not found');
+                return;
+            }
+
+            if (!data.requests || data.requests.length === 0) {
+                container.innerHTML = '<p class="no-data">You have no access requests yet. Create one in the "Create Request" tab.</p>';
+                return;
+            }
+
+            // Фильтруем запросы на всякий случай (дополнительная проверка)
+            const myRequests = data.requests.filter(req => req.patient_id === patientId);
+
+            if (myRequests.length === 0) {
+                container.innerHTML = '<p class="no-data">You have no access requests yet. Create one in the "Create Request" tab.</p>';
+                return;
+            }
+
+            container.innerHTML = myRequests.map(req => {
+                const statusClass = req.status === 'approved' ? 'success' : 
+                                   req.status === 'rejected' ? 'danger' : 
+                                   req.status === 'expired' ? 'secondary' : 'warning';
+                const statusText = req.status === 'approved' ? 'Approved' : 
+                                  req.status === 'rejected' ? 'Rejected' : 
+                                  req.status === 'expired' ? 'Expired' : 'Pending';
+                
+                return `
+                    <div class="request-card status-${req.status}">
+                        <div class="request-header">
+                            <span class="request-id">Request #${req.id}</span>
+                            <span class="badge badge-${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="request-details">
+                            <p><strong>Clinic ID:</strong> ${req.clinic_id}</p>
+                            <p><strong>Medical Data ID:</strong> ${req.medical_data_id}</p>
+                            <p><strong>Requested:</strong> ${new Date(req.requested_at).toLocaleString()}</p>
+                            ${req.approved_at ? `<p><strong>Approved:</strong> ${new Date(req.approved_at).toLocaleString()}</p>` : ''}
+                            ${req.expires_at ? `<p><strong>Expires:</strong> ${new Date(req.expires_at).toLocaleString()}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (err) {
+            console.error('Failed to load requests:', err);
+            const container = document.getElementById('my-requests-list');
+            if (container) {
+                container.innerHTML = `<p class="no-data" style="color: red;">Error loading requests: ${err.message}</p>`;
+            }
+        }
+    }
+
+    initializeViewDataForm() {
+        const form = document.getElementById('view-data-form');
+        if (!form) {
+            console.error('View data form not found');
+            return;
+        }
+
+        // Remove existing event listeners by cloning the form
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = document.getElementById('access-token').value.trim();
+
+            if (!token) {
+                alert('Please enter an access token');
+                return;
+            }
+
+            try {
+                const data = await api.getTemporaryData(token);
+                this.displayTemporaryData(data);
+            } catch (err) {
+                alert(`❌ Failed to load data: ${err.message}`);
+            }
+        });
+    }
+
+    displayTemporaryData(data) {
+        const container = document.getElementById('temporary-data-display');
+
+        // Parse expires_at from data if available, otherwise use 15 minutes from now
+        let expiresAt;
+        let timeLeftSeconds = 15 * 60; // Default 15 minutes
+        
+        if (data.expires_at) {
+            expiresAt = new Date(data.expires_at);
+            timeLeftSeconds = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+        } else {
+            expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        }
+
+        container.innerHTML = `
+            <div class="data-display">
+                <div class="timer-box">
+                    <i class="fas fa-clock"></i>
+                    <span>Access expires in: <strong id="countdown">${Math.floor(timeLeftSeconds / 60)}:${(timeLeftSeconds % 60).toString().padStart(2, '0')}</strong></span>
+                </div>
+                <div class="medical-data-box">
+                    <h4>Medical Information</h4>
+                    <p><strong>Diagnosis:</strong> ${data.diagnosis || 'N/A'}</p>
+                    <p><strong>Complaint:</strong> ${data.complaint || 'N/A'}</p>
+                    <p><strong>Treatment:</strong> ${data.treatment || 'N/A'}</p>
+                    <p><strong>Medications:</strong> ${data.medications || 'N/A'}</p>
+                    <p><strong>Allergies:</strong> ${data.allergies || 'N/A'}</p>
+                    ${data.doctor_notes ? `<p><strong>Doctor Notes:</strong> ${data.doctor_notes}</p>` : ''}
+                    ${data.lab_results ? `<p><strong>Lab Results:</strong> ${data.lab_results}</p>` : ''}
+                </div>
+            </div>
+        `;
+
+        // Start countdown timer with actual time left
+        this.startCountdown(timeLeftSeconds);
+    }
+
+    startCountdown(seconds) {
+        const countdownEl = document.getElementById('countdown');
+        if (!countdownEl) return;
+
+        let timeLeft = seconds;
+
+        const updateTimer = () => {
+            const minutes = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            countdownEl.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                alert('⏰ Access expired! Data has been removed.');
+                document.getElementById('temporary-data-display').innerHTML = '';
+            }
+            timeLeft--;
+        };
+
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+    }
+
+    async loadPendingRequests() {
+        try {
+            const data = await api.listAccessRequests({ status: 'pending' });
+            const container = document.getElementById('pending-requests-list');
+
+            if (!data.requests || data.requests.length === 0) {
+                container.innerHTML = '<p class="no-data">No pending requests</p>';
+                return;
+            }
+
+            container.innerHTML = data.requests.map(req => `
+                <div class="request-card">
+                    <div class="request-header">
+                        <span class="request-id">Request #${req.id}</span>
+                        <span class="badge badge-pending">Pending</span>
+                    </div>
+                    <div class="request-details">
+                        <p><strong>Patient ID:</strong> ${req.patient_id}</p>
+                        <p><strong>Medical Data ID:</strong> ${req.medical_data_id}</p>
+                        <p><strong>Requested:</strong> ${new Date(req.requested_at).toLocaleString()}</p>
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn btn-success btn-sm" onclick="app.approveRequest(${req.id})">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="app.rejectRequest(${req.id})">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Failed to load pending requests:', err);
+        }
+    }
+
+    async loadAllRequests() {
+        try {
+            const data = await api.listAccessRequests({});
+            const container = document.getElementById('all-requests-list');
+
+            if (!data.requests || data.requests.length === 0) {
+                container.innerHTML = '<p class="no-data">No requests found</p>';
+                return;
+            }
+
+            container.innerHTML = data.requests.map(req => `
+                <div class="request-card status-${req.status}">
+                    <div class="request-header">
+                        <span class="request-id">Request #${req.id}</span>
+                        <span class="badge badge-${req.status}">${req.status}</span>
+                    </div>
+                    <div class="request-details">
+                        <p><strong>Patient ID:</strong> ${req.patient_id}</p>
+                        <p><strong>Medical Data ID:</strong> ${req.medical_data_id}</p>
+                        <p><strong>Requested:</strong> ${new Date(req.requested_at).toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Failed to load all requests:', err);
+        }
+    }
+
+    async approveRequest(requestId) {
+        const user = auth.getUser();
+
+        if (!confirm('Approve this request?')) return;
+
+        try {
+            const result = await api.approveAccessRequest(requestId, user.id);
+            alert(`✅ Request approved!\n\nAccess Token: ${result.access_token}\n\nExpires: ${new Date(result.expires_at).toLocaleString()}\n\nPlease give this token to the patient.`);
+            await this.loadPendingRequests();
+            await this.loadAllRequests();
+        } catch (err) {
+            alert(`❌ Failed to approve request: ${err.message}`);
+        }
+    }
+
+    async rejectRequest(requestId) {
+        if (!confirm('Reject this request?')) return;
+
+        try {
+            await api.rejectAccessRequest(requestId);
+            alert('✅ Request rejected successfully');
+            await this.loadPendingRequests();
+            await this.loadAllRequests();
+        } catch (err) {
+            alert(`❌ Failed to reject request: ${err.message}`);
         }
     }
 }

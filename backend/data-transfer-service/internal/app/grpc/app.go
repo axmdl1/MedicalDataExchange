@@ -14,7 +14,7 @@ type App struct {
 	port int
 }
 
-func New(port int, svc service.DataTransferService, jwtManager *service.JWTManager) *App {
+func New(port int, svc service.DataTransferService, patientAccessService service.PatientAccessService, jwtManager *service.JWTManager) *App {
 	// Создаем gRPC сервер с интерцепторами для JWT и RBAC
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
@@ -22,7 +22,7 @@ func New(port int, svc service.DataTransferService, jwtManager *service.JWTManag
 			grpcapi.RBACInterceptor(),
 		),
 	)
-	grpcapi.RegisterServerAPI(s, svc)
+	grpcapi.RegisterServerAPI(s, svc, patientAccessService)
 
 	return &App{
 		srv:  s,

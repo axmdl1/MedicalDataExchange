@@ -6,3 +6,6 @@ database:
 
 auth:
   jwt_secret: "supersecret"
+
+encryption:
+  secret: "your-encryption-secret-key-32-bytes-long!!!"

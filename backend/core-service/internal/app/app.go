@@ -19,6 +19,7 @@ func New(cfg config.Config) *App {
 	dtClient, _ := client.NewDataTransferClient(cfg.GRPC.DataTransfer)
 	h := handler.NewDataTransferHandler(dtClient)
 	hClinic := handler.NewClinicHandler(dtClient)
+	hPatientAccess := handler.NewPatientAccessHandler(dtClient)
 
 	uClient, _ := client.NewUserClient(cfg.GRPC.User)
 	hUser := handler.NewUserHandler(uClient.API)
@@ -65,6 +66,17 @@ func New(cfg config.Config) *App {
 		r.Delete("/{id}", hUser.DeleteUser) // требует Authorization
 	})
 	r.Post("/users/login", hUser.Login) // публичный
+
+	// Patient Access (новый функционал)
+	r.Route("/patient-access", func(r chi.Router) {
+		r.Post("/request", hPatientAccess.CreateAccessRequest)        // Пациент создает запрос
+		r.Post("/approve/{id}", hPatientAccess.ApproveAccessRequest)  // Клиника одобряет
+		r.Post("/reject/{id}", hPatientAccess.RejectAccessRequest)    // Клиника отклоняет
+		r.Get("/data", hPatientAccess.GetTemporaryData)               // Получить данные по токену
+		r.Get("/requests", hPatientAccess.ListAccessRequests)         // Список запросов
+		r.Get("/request/{id}", hPatientAccess.GetAccessRequest)       // Конкретный запрос
+		r.Post("/revoke", hPatientAccess.RevokeAccess)                // Отозвать доступ
+	})
 
 	return &App{
 		Server: http.Server{

@@ -14,6 +14,9 @@ type Config struct {
 	Auth struct {
 		JWTSecret string `mapstructure:"jwt_secret"`
 	} `mapstructure:"auth"`
+	Encryption struct {
+		Secret string `mapstructure:"secret"`
+	} `mapstructure:"encryption"`
 }
 
 func Load() Config {
@@ -26,6 +29,7 @@ func Load() Config {
 	viper.SetDefault("server.port", 50052)
 	viper.SetDefault("database.url", "host=localhost user=postgres password=postgres dbname=medical_exchange port=5432 sslmode=disable")
 	viper.SetDefault("auth.jwt_secret", "your-secret-key-change-in-production")
+	viper.SetDefault("encryption.secret", "your-encryption-secret-key-32-bytes-long!!!")
 
 	_ = viper.ReadInConfig() // игнорим ошибку — упадёт только если структура не совпадает
 

@@ -27,6 +27,20 @@ type DataTransferRepository interface {
 	UpdateClinic(ctx context.Context, clinic *model.Clinic) error
 	DeleteClinic(ctx context.Context, id int64) error
 	ListClinics(ctx context.Context) ([]model.Clinic, error)
+
+	// PatientAccessRequest CRUD
+	CreatePatientAccessRequest(ctx context.Context, request *model.PatientAccessRequest) error
+	GetPatientAccessRequest(ctx context.Context, id int64) (*model.PatientAccessRequest, error)
+	UpdatePatientAccessRequest(ctx context.Context, request *model.PatientAccessRequest) error
+	ListPatientAccessRequests(ctx context.Context, patientID, clinicID *int64, status *string) ([]*model.PatientAccessRequest, error)
+	UpdateExpiredAccessRequests(ctx context.Context) (int, error)
+
+	// TemporaryPatientData CRUD
+	CreateTemporaryPatientData(ctx context.Context, data *model.TemporaryPatientData) error
+	GetTemporaryDataByToken(ctx context.Context, accessToken string) (*model.TemporaryPatientData, error)
+	UpdateTemporaryPatientData(ctx context.Context, data *model.TemporaryPatientData) error
+	DeleteTemporaryPatientData(ctx context.Context, id int64) error
+	DeleteExpiredTemporaryData(ctx context.Context) (int, error)
 }
 
 type dataTransferRepo struct {
@@ -135,4 +149,81 @@ func (r *dataTransferRepo) ListClinics(ctx context.Context) ([]model.Clinic, err
 		return nil, err
 	}
 	return clinics, nil
+}
+
+// --- PatientAccessRequest ---
+func (r *dataTransferRepo) CreatePatientAccessRequest(ctx context.Context, request *model.PatientAccessRequest) error {
+	return r.db.WithContext(ctx).Create(request).Error
+}
+
+func (r *dataTransferRepo) GetPatientAccessRequest(ctx context.Context, id int64) (*model.PatientAccessRequest, error) {
+	var request model.PatientAccessRequest
+	if err := r.db.WithContext(ctx).First(&request, id).Error; err != nil {
+		return nil, err
+	}
+	return &request, nil
+}
+
+func (r *dataTransferRepo) UpdatePatientAccessRequest(ctx context.Context, request *model.PatientAccessRequest) error {
+	return r.db.WithContext(ctx).Save(request).Error
+}
+
+func (r *dataTransferRepo) ListPatientAccessRequests(ctx context.Context, patientID, clinicID *int64, status *string) ([]*model.PatientAccessRequest, error) {
+	var requests []*model.PatientAccessRequest
+	query := r.db.WithContext(ctx).Model(&model.PatientAccessRequest{})
+
+	if patientID != nil {
+		query = query.Where("patient_id = ?", *patientID)
+	}
+	if clinicID != nil {
+		query = query.Where("clinic_id = ?", *clinicID)
+	}
+	if status != nil {
+		query = query.Where("status = ?", *status)
+	}
+
+	if err := query.Order("requested_at DESC").Find(&requests).Error; err != nil {
+		return nil, err
+	}
+	return requests, nil
+}
+
+func (r *dataTransferRepo) UpdateExpiredAccessRequests(ctx context.Context) (int, error) {
+	result := r.db.WithContext(ctx).
+		Model(&model.PatientAccessRequest{}).
+		Where("expires_at < ? AND status = ?", time.Now(), "approved").
+		Update("status", "expired")
+
+	return int(result.RowsAffected), result.Error
+}
+
+// --- TemporaryPatientData ---
+func (r *dataTransferRepo) CreateTemporaryPatientData(ctx context.Context, data *model.TemporaryPatientData) error {
+	return r.db.WithContext(ctx).Create(data).Error
+}
+
+func (r *dataTransferRepo) GetTemporaryDataByToken(ctx context.Context, accessToken string) (*model.TemporaryPatientData, error) {
+	var data model.TemporaryPatientData
+	if err := r.db.WithContext(ctx).
+		Where("access_token = ?", accessToken).
+		First(&data).Error; err != nil {
+		return nil, err
+	}
+	return &data, nil
+}
+
+func (r *dataTransferRepo) UpdateTemporaryPatientData(ctx context.Context, data *model.TemporaryPatientData) error {
+	return r.db.WithContext(ctx).Save(data).Error
+}
+
+func (r *dataTransferRepo) DeleteTemporaryPatientData(ctx context.Context, id int64) error {
+	return r.db.WithContext(ctx).Delete(&model.TemporaryPatientData{}, id).Error
+}
+
+func (r *dataTransferRepo) DeleteExpiredTemporaryData(ctx context.Context) (int, error) {
+	result := r.db.WithContext(ctx).
+		Where("expires_at < ? OR is_revoked = ?", time.Now(), true).
+		Delete(&model.TemporaryPatientData{})
+
+	return int(result.RowsAffected), result.Error
 }

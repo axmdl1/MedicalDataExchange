@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Временный доступ к данным - Medical Data System</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .access-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .request-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+        }
+
+        .request-card.pending {
+            border-left: 4px solid #f39c12;
+        }
+
+        .request-card.approved {
+            border-left: 4px solid #27ae60;
+        }
+
+        .request-card.rejected {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .request-card.expired {
+            border-left: 4px solid #95a5a6;
+            opacity: 0.7;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-expired {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .token-display {
+            background: #f8f9fa;
+            border: 2px dashed #3498db;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+
+        .token-display h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .token-value {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+
+        .countdown {
+            font-size: 24px;
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .medical-data-display {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .data-field {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-field:last-child {
+            border-bottom: none;
+        }
+
+        .data-field label {
+            font-weight: bold;
+            color: #7f8c8d;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .data-field .value {
+            color: #2c3e50;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #f8f9fa;
+        }
+
+        .tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="access-container">
+        <h1>🔐 Временный доступ к медицинским данным</h1>
+
+        <!-- Навигация по табам -->
+        <div class="tabs">
+            <div class="tab active" data-tab="create">Создать запрос</div>
+            <div class="tab" data-tab="my-requests">Мои запросы</div>
+            <div class="tab" data-tab="pending-approvals">Ожидают одобрения</div>
+            <div class="tab" data-tab="view-data">Просмотр данных</div>
+        </div>
+
+        <!-- Таб 1: Создание запроса (для пациентов) -->
+        <div class="tab-content active" id="create-tab">
+            <div class="section">
+                <h2>📨 Создать запрос на доступ к своим данным</h2>
+                <div id="create-alert"></div>
+
+                <form id="create-access-form">
+                    <div class="form-group">
+                        <label>Клиника:</label>
+                        <select id="clinic-select" required>
+                            <option value="">Выберите клинику...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Медицинская запись:</label>
+                        <select id="medical-data-select" required>
+                            <option value="">Сначала выберите клинику...</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">📨 Отправить запрос</button>
+                </form>
+
+                <div class="alert alert-info" style="margin-top: 20px;">
+                    <strong>ℹ️ Как это работает:</strong>
+                    <ol>
+                        <li>Вы отправляете запрос на просмотр своих медицинских данных</li>
+                        <li>Клиника получает уведомление и проверяет запрос</li>
+                        <li>После одобрения вы получите токен доступа на 15 минут</li>
+                        <li>По истечении времени данные удаляются автоматически</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Таб 2: Мои запросы (для пациентов) -->
+        <div class="tab-content" id="my-requests-tab">
+            <div class="section">
+                <h2>📋 Мои запросы на доступ</h2>
+                <div id="my-requests-list"></div>
+            </div>
+        </div>
+
+        <!-- Таб 3: Запросы на одобрение (для сотрудников клиники) -->
+        <div class="tab-content" id="pending-approvals-tab">
+            <div class="section">
+                <h2>⏳ Запросы, ожидающие одобрения</h2>
+                <div id="pending-approvals-list"></div>
+            </div>
+        </div>
+
+        <!-- Таб 4: Просмотр данных по токену -->
+        <div class="tab-content" id="view-data-tab">
+            <div class="section">
+                <h2>👁️ Просмотр медицинских данных</h2>
+                <div id="view-data-alert"></div>
+
+                <div class="form-group">
+                    <label>Введите токен доступа:</label>
+                    <input type="text" id="access-token-input" placeholder="Вставьте токен, полученный от клиники">
+                </div>
+
+                <button class="btn btn-primary" onclick="viewMedicalData()">🔍 Просмотреть данные</button>
+
+                <div id="countdown-container" class="hidden">
+                    <div class="token-display">
+                        <h3>⏰ Доступ активен</h3>
+                        <p>Данные будут автоматически удалены через:</p>
+                        <div class="countdown" id="countdown-timer">15:00</div>
+                    </div>
+                </div>
+
+                <div id="medical-data-container"></div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="index.html" class="btn btn-primary">← Вернуться на главную</a>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        let countdownInterval = null;
+
+        // Переключение табов
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+
+                // Убираем active со всех табов
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // Добавляем active к выбранному
+                this.classList.add('active');
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+
+                // Загружаем данные для таба
+                loadTabData(tabName);
+            });
+        });
+
+        // Загрузка клиник при старте
+        async function loadClinics() {
+            try {
+                const response = await api.getClinics();
+                const select = document.getElementById('clinic-select');
+                select.innerHTML = '<option value="">Выберите клинику...</option>';
+
+                response.clinics.forEach(clinic => {
+                    const option = document.createElement('option');
+                    option.value = clinic.id;
+                    option.textContent = clinic.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки клиник:', error);
+            }
+        }
+
+        // Загрузка медицинских записей при выборе клиники
+        document.getElementById('clinic-select').addEventListener('change', async function() {
+            const clinicId = this.value;
+            const user = auth.getUser();
+
+            if (!clinicId) {
+                document.getElementById('medical-data-select').innerHTML =
+                    '<option value="">Сначала выберите клинику...</option>';
+                return;
+            }
+
+            try {
+                const response = await api.getMedicalData({
+                    user_id: user.id,
+                    clinic_id: clinicId
+                });
+
+                const select = document.getElementById('medical-data-select');
+                select.innerHTML = '<option value="">Выберите запись...</option>';
+
+                response.data.forEach(record => {
+                    const option = document.createElement('option');
+                    option.value = record.id;
+                    option.textContent = `${record.diagnosis} (${new Date(record.created_at).toLocaleDateString()})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки медицинских данных:', error);
+            }
+        });
+
+        // Отправка запроса на доступ
+        document.getElementById('create-access-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const user = auth.getUser();
+            const clinicId = document.getElementById('clinic-select').value;
+            const medicalDataId = document.getElementById('medical-data-select').value;
+            const alertDiv = document.getElementById('create-alert');
+
+            try {
+                const response = await api.createAccessRequest(user.id, clinicId, medicalDataId);
+
+                alertDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✅ Успешно!</strong><br>
+                        ${response.message}<br>
+                        ID запроса: <strong>#${response.request_id}</strong>
+                    </div>
+                `;
+
+                this.reset();
+            } catch (error) {
+                alertDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>❌ Ошибка:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        });
+
+        // Загрузка данных для таба
+        async function loadTabData(tabName) {
+            const user = auth.getUser();
+
+            if (tabName === 'my-requests') {
+                await loadMyRequests(user.id);
+            } else if (tabName === 'pending-approvals') {
+                await loadPendingApprovals();
+            }
+        }
+
+        // Загрузка моих запросов
+        async function loadMyRequests(patientId) {
+            const container = document.getElementById('my-requests-list');
+            container.innerHTML = '<div class="loading">Загрузка...</div>';
+
+            try {
+                const response = await api.listAccessRequests({ patient_id: patientId });
+                const requests = response.requests || [];
+
+                if (requests.length === 0) {
+                    container.innerHTML = '<div class="empty-state">У вас пока нет запросов</div>';
+                    return;
+                }
+
+                container.innerHTML = requests.map(req => `
+                    <div class="request-card ${req.status}">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3>Запрос #${req.id}</h3>
+                                <p><strong>Клиника:</strong> ${req.clinic_id}</p>
+                                <p><strong>Данные:</strong> ID ${req.medical_data_id}</p>
+                                <p><strong>Создан:</strong> ${new Date(req.requested_at).toLocaleString()}</p>
+                                ${req.expires_at ? `<p><strong>Истекает:</strong> ${new Date(req.expires_at).toLocaleString()}</p>` : ''}
+                            </div>
+                            <span class="status-badge status-${req.status}">${getStatusText(req.status)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-error">Ошибка загрузки: ${error.message}</div>`;
+            }
+        }
+
+        // Загрузка запросов на одобрение (для сотрудников)
+        async function loadPendingApprovals() {
+            const container = document.getElementById('pending-approvals-list');
+            const user = auth.getUser();
+
+            if (user.role !== 'employee' && user.role !== 'admin') {
+                container.innerHTML = '<div class="alert alert-info">Только сотрудники клиники могут одобрять запросы</div>';
+                return;
+            }
+
+            container.innerHTML = '<div class="loading">Загрузка...</div>';
+
+            try {
+                const response = await api.listAccessRequests({
+                    clinic_id: user.clinic_id,
+                    status: 'pending'
+                });
+                const requests = response.requests || [];
+
+                if (requests.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Нет запросов, ожидающих одобрения</div>';
+                    return;
+                }
+
+                container.innerHTML = requests.map(req => `
+                    <div class="request-card pending">
+                        <h3>Запрос #${req.id}</h3>
+                        <p><strong>Пациент ID:</strong> ${req.patient_id}</p>
+                        <p><strong>Данные ID:</strong> ${req.medical_data_id}</p>
+                        <p><strong>Создан:</strong> ${new Date(req.requested_at).toLocaleString()}</p>
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-success" onclick="approveRequest(${req.id})">✅ Одобрить</button>
+                            <button class="btn btn-danger" onclick="rejectRequest(${req.id})">❌ Отклонить</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-error">Ошибка загрузки: ${error.message}</div>`;
+            }
+        }
+
+        // Одобрение запроса
+        async function approveRequest(requestId) {
+            const user = auth.getUser();
+
+            if (!confirm('Одобрить этот запрос на доступ?')) {
+                return;
+            }
+
+            try {
+                const response = await api.approveAccessRequest(requestId, user.id);
+
+                alert(`✅ Запрос одобрен!\n\nТокен доступа: ${response.access_token}\n\nТокен действителен до: ${new Date(response.expires_at).toLocaleString()}`);
+
+                loadPendingApprovals(); // Обновляем список
+            } catch (error) {
+                alert(`❌ Ошибка: ${error.message}`);
+            }
+        }
+
+        // Просмотр данных по токену
+        async function viewMedicalData() {
+            const token = document.getElementById('access-token-input').value.trim();
+            const alertDiv = document.getElementById('view-data-alert');
+            const container = document.getElementById('medical-data-container');
+
+            if (!token) {
+                alertDiv.innerHTML = '<div class="alert alert-error">Введите токен доступа</div>';
+                return;
+            }
+
+            try {
+                const data = await api.getTemporaryData(token);
+
+                container.innerHTML = `
+                    <div class="medical-data-display">
+                        <h3>📋 Медицинские данные</h3>
+                        <div class="data-field">
+                            <label>Диагноз:</label>
+                            <div class="value">${data.diagnosis}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Жалобы:</label>
+                            <div class="value">${data.complaint}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Лечение:</label>
+                            <div class="value">${data.treatment}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Медикаменты:</label>
+                            <div class="value">${data.medications}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Аллергии:</label>
+                            <div class="value">${data.allergies || 'Нет'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Записи врача:</label>
+                            <div class="value">${data.doctor_notes}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Результаты анализов:</label>
+                            <div class="value">${data.lab_results}</div>
+                        </div>
+                    </div>
+                `;
+
+                // Показываем обратный отсчет
+                startCountdown(15 * 60); // 15 минут
+                document.getElementById('countdown-container').classList.remove('hidden');
+
+                alertDiv.innerHTML = '<div class="alert alert-success">✅ Данные успешно загружены</div>';
+            } catch (error) {
+                alertDiv.innerHTML = `<div class="alert alert-error">❌ Ошибка: ${error.message}</div>`;
+                container.innerHTML = '';
+            }
+        }
+
+        // Обратный отсчет
+        function startCountdown(seconds) {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            let remaining = seconds;
+            const timerEl = document.getElementById('countdown-timer');
+
+            countdownInterval = setInterval(() => {
+                remaining--;
+
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    timerEl.textContent = '00:00';
+                    alert('⏰ Время доступа истекло! Данные удалены.');
+                    document.getElementById('medical-data-container').innerHTML = '';
+                    document.getElementById('countdown-container').classList.add('hidden');
+                    return;
+                }
+
+                const minutes = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Получение текста статуса
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Ожидает',
+                'approved': 'Одобрено',
+                'rejected': 'Отклонено',
+                'expired': 'Истекло'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Инициализация при загрузке
+        if (!auth.isAuthenticated()) {
+            window.location.href = 'index.html#login';
+        } else {
+            loadClinics();
+            loadTabData('create');
+        }
+    </script>
+</body>
+</html>

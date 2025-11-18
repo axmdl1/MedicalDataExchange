@@ -6,6 +6,7 @@ OUTPUT_PATH_CPP  ?= pkg/gen/cpp
 PROTO_FILES ?= \
     user/user.proto \
     data-transfer/data-transfer.proto \
+    blockchain/blockchain.proto \
 
 proto:
 	@mkdir -p $(OUTPUT_PATH_GO)

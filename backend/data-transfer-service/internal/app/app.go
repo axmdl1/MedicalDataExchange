@@ -22,9 +22,10 @@ func New(cfg config.Config) *App {
 
 	repo := repository.NewDataTransferRepository(db)
 	svc := service.NewDataTransferService(repo)
+	patientAccessService := service.NewPatientAccessService(repo, cfg.Encryption.Secret)
 	jwtManager := service.NewJWTManager(cfg.Auth.JWTSecret)
 
 	return &App{
-		GRPC: grpcapp.New(cfg.Server.Port, svc, jwtManager),
+		GRPC: grpcapp.New(cfg.Server.Port, svc, patientAccessService, jwtManager),
 	}
 }

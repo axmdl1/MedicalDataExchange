@@ -52,3 +52,38 @@ type Clinic struct {
 func (Clinic) TableName() string {
 	return "clinics"
 }
+
+// PatientAccessRequest представляет запрос пациента на просмотр своих данных
+type PatientAccessRequest struct {
+	ID              int64     `gorm:"column:id;primaryKey"`
+	PatientID       int64     `gorm:"column:patient_id"`
+	ClinicID        int64     `gorm:"column:clinic_id"`
+	MedicalDataID   int64     `gorm:"column:medical_data_id"`
+	Status          string    `gorm:"column:status"` // pending, approved, rejected, expired
+	BlockchainTxID  string    `gorm:"column:blockchain_tx_id"`
+	RequestedAt     time.Time `gorm:"column:requested_at;autoCreateTime"`
+	ApprovedAt      *time.Time `gorm:"column:approved_at"`
+	ExpiresAt       *time.Time `gorm:"column:expires_at"`
+}
+
+func (PatientAccessRequest) TableName() string {
+	return "patient_access_requests"
+}
+
+// TemporaryPatientData представляет временную копию мед. данных для пациента
+type TemporaryPatientData struct {
+	ID            int64     `gorm:"column:id;primaryKey"`
+	AccessToken   string    `gorm:"column:access_token;uniqueIndex"`
+	PatientID     int64     `gorm:"column:patient_id"`
+	ClinicID      int64     `gorm:"column:clinic_id"`
+	MedicalDataID int64     `gorm:"column:medical_data_id"`
+	// Копия данных (зашифрованных)
+	EncryptedData string    `gorm:"column:encrypted_data;type:text"`
+	GrantedAt     time.Time `gorm:"column:granted_at;autoCreateTime"`
+	ExpiresAt     time.Time `gorm:"column:expires_at"`
+	IsRevoked     bool      `gorm:"column:is_revoked;default:false"`
+}
+
+func (TemporaryPatientData) TableName() string {
+	return "temporary_patient_data"
+}

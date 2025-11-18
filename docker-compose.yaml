@@ -42,6 +42,22 @@ services:
       - "50052:50052"
     networks: [mednet]
 
+  blockchain-service:
+    build:
+      context: ./backend
+      dockerfile: blockchain-service/Dockerfile
+    container_name: mde-blockchain
+    environment:
+      - GRPC_ADDR=:50054
+      - FABRIC_CHANNEL=medical-channel
+      - FABRIC_CHAINCODE=medical-access
+    ports:
+      - "50054:50054"
+    networks: [mednet]
+    volumes:
+      - ./blockchain/fabric/network/crypto-config:/app/crypto:ro
+      - ./blockchain/fabric/config:/app/config:ro
+
   core-service:
     build:
       context: ./backend
@@ -50,6 +66,7 @@ services:
     depends_on:
       - user-service
       - data-transfer-service
+      - blockchain-service
     ports:
       - "8099:8099"
     networks: [mednet]

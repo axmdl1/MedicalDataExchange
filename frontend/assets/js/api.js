@@ -172,6 +172,55 @@ class APIClient {
             method: 'DELETE'
         });
     }
+
+    // Patient Access APIs (новый функционал)
+    async createAccessRequest(patientId, clinicId, medicalDataId) {
+        return this.request('/patient-access/request', {
+            method: 'POST',
+            body: JSON.stringify({
+                patient_id: parseInt(patientId),
+                clinic_id: parseInt(clinicId),
+                medical_data_id: parseInt(medicalDataId)
+            })
+        });
+    }
+
+    async approveAccessRequest(requestId, approverId) {
+        return this.request(`/patient-access/approve/${requestId}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                approver_id: parseInt(approverId)
+            })
+        });
+    }
+
+    async getTemporaryData(accessToken) {
+        return this.request(`/patient-access/data?token=${accessToken}`);
+    }
+
+    async listAccessRequests(filters = {}) {
+        const params = new URLSearchParams(filters);
+        return this.request(`/patient-access/requests?${params}`);
+    }
+
+    async getAccessRequest(requestId) {
+        return this.request(`/patient-access/request/${requestId}`);
+    }
+
+    async revokeAccess(accessToken) {
+        return this.request('/patient-access/revoke', {
+            method: 'POST',
+            body: JSON.stringify({
+                access_token: accessToken
+            })
+        });
+    }
+
+    async rejectAccessRequest(requestId) {
+        return this.request(`/patient-access/reject/${requestId}`, {
+            method: 'POST'
+        });
+    }
 }
 
 // Global API instance

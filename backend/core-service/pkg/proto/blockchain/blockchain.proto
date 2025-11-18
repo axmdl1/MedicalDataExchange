@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package blockchain;
+
+option go_package = "github.com/medical-data-exchange/core-service/pkg/proto/blockchain";
+
+import "google/protobuf/timestamp.proto";
+
+service BlockchainService {
+  rpc CreateAccessRequest(CreateAccessRequestRequest) returns (AccessRequestResponse);
+  rpc ApproveAccessRequest(ApproveAccessRequestRequest) returns (AccessRequestResponse);
+  rpc RejectAccessRequest(RejectAccessRequestRequest) returns (AccessRequestResponse);
+  rpc GetAccessRequest(GetAccessRequestRequest) returns (AccessRequestResponse);
+  rpc ValidateAccess(ValidateAccessRequest) returns (TemporaryAccessResponse);
+  rpc RevokeAccess(RevokeAccessRequest) returns (RevokeAccessResponse);
+  rpc LogDataTransfer(LogDataTransferRequest) returns (LogDataTransferResponse);
+  rpc GetTransferLog(GetTransferLogRequest) returns (DataTransferLogResponse);
+}
+
+message CreateAccessRequestRequest {
+  string id = 1;
+  string patient_id = 2;
+  string clinic_id = 3;
+  string medical_data_id = 4;
+  string request_type = 5;
+  string from_clinic_id = 6;
+  string to_clinic_id = 7;
+}
+
+message ApproveAccessRequestRequest {
+  string request_id = 1;
+  string approver_id = 2;
+}
+
+message RejectAccessRequestRequest {
+  string request_id = 1;
+}
+
+message GetAccessRequestRequest {
+  string request_id = 1;
+}
+
+message AccessRequestResponse {
+  string id = 1;
+  string patient_id = 2;
+  string clinic_id = 3;
+  string medical_data_id = 4;
+  string request_type = 5;
+  string status = 6;
+  google.protobuf.Timestamp requested_at = 7;
+  google.protobuf.Timestamp approved_at = 8;
+  google.protobuf.Timestamp expires_at = 9;
+  string from_clinic_id = 10;
+  string to_clinic_id = 11;
+}
+
+message ValidateAccessRequest {
+  string access_id = 1;
+}
+
+message TemporaryAccessResponse {
+  string id = 1;
+  string access_token = 2;
+  string patient_id = 3;
+  string clinic_id = 4;
+  string medical_data_id = 5;
+  google.protobuf.Timestamp granted_at = 6;
+  google.protobuf.Timestamp expires_at = 7;
+  bool is_revoked = 8;
+}
+
+message RevokeAccessRequest {
+  string access_id = 1;
+}
+
+message RevokeAccessResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message LogDataTransferRequest {
+  string id = 1;
+  string medical_data_id = 2;
+  string patient_id = 3;
+  string from_clinic_id = 4;
+  string to_clinic_id = 5;
+  string approved_by = 6;
+  string data_hash = 7;
+}
+
+message LogDataTransferResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetTransferLogRequest {
+  string transfer_id = 1;
+}
+
+message DataTransferLogResponse {
+  string id = 1;
+  string medical_data_id = 2;
+  string patient_id = 3;
+  string from_clinic_id = 4;
+  string to_clinic_id = 5;
+  string approved_by = 6;
+  google.protobuf.Timestamp transferred_at = 7;
+  string data_hash = 8;
+}

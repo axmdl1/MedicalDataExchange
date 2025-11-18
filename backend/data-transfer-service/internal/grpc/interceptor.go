@@ -88,18 +88,38 @@ func RBACInterceptor() grpc.UnaryServerInterceptor {
 		if role == "patient" {
 			log.Println("RBAC: patient access check")
 
-			hasID := hasUserIDInRequest(req)
-			log.Printf("RBAC: hasUserIDInRequest = %v", hasID)
+			// Проверяем Patient Access методы
+			if strings.Contains(method, "PatientAccess") {
+				// Для Patient Access проверяем patient_id
+				hasPatientID := hasPatientIDInRequest(req)
+				log.Printf("RBAC: hasPatientIDInRequest = %v", hasPatientID)
 
-			if hasID {
-				matches := userIDMatches(req, userID)
-				log.Printf("RBAC: userIDMatches = %v (expected: %d)", matches, userID)
-				if !matches {
-					log.Println("RBAC: user_id mismatch → denied")
-					return nil, status.Error(codes.PermissionDenied, "you can only access your own data")
+				if hasPatientID {
+					matches := patientIDMatches(req, userID)
+					log.Printf("RBAC: patientIDMatches = %v (expected: %d)", matches, userID)
+					if !matches {
+						log.Println("RBAC: patient_id mismatch → denied")
+						return nil, status.Error(codes.PermissionDenied, "you can only access your own requests")
+					}
+				} else {
+					// Если patient_id не указан, принудительно устанавливаем из токена
+					log.Printf("RBAC: no patient_id in request, will be set from token (user_id=%d)", userID)
 				}
 			} else {
-				log.Println("RBAC: no user_id in request → allowing (service will auto-fill)")
+				// Для других методов проверяем user_id
+				hasID := hasUserIDInRequest(req)
+				log.Printf("RBAC: hasUserIDInRequest = %v", hasID)
+
+				if hasID {
+					matches := userIDMatches(req, userID)
+					log.Printf("RBAC: userIDMatches = %v (expected: %d)", matches, userID)
+					if !matches {
+						log.Println("RBAC: user_id mismatch → denied")
+						return nil, status.Error(codes.PermissionDenied, "you can only access your own data")
+					}
+				} else {
+					log.Println("RBAC: no user_id in request → allowing (service will auto-fill)")
+				}
 			}
 
 			log.Println("RBAC: patient access granted")
@@ -181,6 +201,56 @@ func userIDMatches(req interface{}, expected int64) bool {
 	}
 
 	log.Println("RBAC: no user_id field found for comparison")
+	return false
+}
+
+// hasPatientIDInRequest — проверяет, заполнено ли поле patient_id
+func hasPatientIDInRequest(req interface{}) bool {
+	v := reflect.ValueOf(req)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return false
+	}
+
+	// Проверяем PatientId (protobuf генерирует как PatientId)
+	if f := v.FieldByName("PatientId"); f.IsValid() {
+		if val, ok := f.Interface().(*int64); ok && val != nil && *val != 0 {
+			log.Printf("RBAC: PatientId = %d", *val)
+			return true
+		}
+		// Также проверяем как int64 (не указатель)
+		if val, ok := f.Interface().(int64); ok && val != 0 {
+			log.Printf("RBAC: PatientId = %d (non-pointer)", val)
+			return true
+		}
+	}
+
+	return false
+}
+
+// patientIDMatches — сравнивает patient_id с expected
+func patientIDMatches(req interface{}, expected int64) bool {
+	v := reflect.ValueOf(req)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	// Проверяем PatientId
+	if f := v.FieldByName("PatientId"); f.IsValid() {
+		// Проверяем как указатель
+		if val, ok := f.Interface().(*int64); ok && val != nil {
+			log.Printf("RBAC: PatientId = %d, expected = %d", *val, expected)
+			return *val == expected
+		}
+		// Проверяем как int64
+		if val, ok := f.Interface().(int64); ok {
+			log.Printf("RBAC: PatientId = %d, expected = %d", val, expected)
+			return val == expected
+		}
+	}
+
 	return false
 }
 
