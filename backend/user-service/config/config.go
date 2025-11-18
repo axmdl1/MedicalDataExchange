@@ -3,7 +3,7 @@ package config
 type GRPC struct {
 	Port string `yaml:"port"`
 }
-
+// db
 type Postgres struct {
 	DSN string `yaml:"dsn"`
 }
