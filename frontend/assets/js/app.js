@@ -643,8 +643,8 @@ class App {
                             <input type="password" id="userPassword" placeholder="Leave empty to keep current">
                         </div>
                         <div class="form-group" id="userClinicGroup" style="display: none;">
-                            <label>Clinic ID</label>
-                            <input type="number" id="userClinicId">
+                            <label>Clinics</label>
+                            <select id="userClinicId"></select>
                         </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
@@ -654,6 +654,8 @@ class App {
                 </div>
             </div>
         `;
+
+        await this.loadClinicsIntoSelect("userClinicId");
 
         // Setup form handler
         document.getElementById('userForm').addEventListener('submit', (e) => this.submitUserForm(e));
@@ -1009,74 +1011,83 @@ class App {
         const myClinicId = auth.getClinicId();
 
         this.appContainer.innerHTML = `
-            <div class="dashboard-wrapper">
-                ${this.renderSidebar()}
+        <div class="dashboard-wrapper">
+            ${this.renderSidebar()}
 
-                <main class="main-content">
-                    <h1 style="margin-bottom: 30px;">Create New User</h1>
+            <main class="main-content">
+                <h1 style="margin-bottom: 30px;">Create New User</h1>
 
-                    <div class="widget" style="max-width: 600px;">
-                        <form id="createUserForm">
-                            <div class="form-group">
-                                <label>User Type</label>
-                                <select id="userType" required>
-                                    <option value="patient">Patient</option>
-                                    ${role === ROLES.ADMIN ? '<option value="employee">Employee</option>' : ''}
-                                    ${role === ROLES.ADMIN ? '<option value="admin">Admin</option>' : ''}
-                                </select>
-                            </div>
+                <div class="widget" style="max-width: 600px;">
+                    <form id="createUserForm">
+                        <div class="form-group">
+                            <label>User Type</label>
+                            <select id="userType" required>
+                                <option value="patient">Patient</option>
+                                ${role === ROLES.ADMIN ? '<option value="employee">Employee</option>' : ''}
+                                ${role === ROLES.ADMIN ? '<option value="admin">Admin</option>' : ''}
+                            </select>
+                        </div>
 
-                            <div class="form-group">
-                                <label>First Name</label>
-                                <input type="text" id="firstName" required>
-                            </div>
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="firstName" required>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Last Name</label>
-                                <input type="text" id="lastName" required>
-                            </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="lastName" required>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" id="email" required>
-                            </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" required>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Phone</label>
-                                <input type="tel" id="phone" required>
-                            </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" id="phone" required>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Password</label>
-                                <input type="password" id="password" value="password123" required>
-                            </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="password" value="password123" required>
+                        </div>
 
-                            <div class="form-group" id="clinicIdGroup" style="display: none;">
-                                <label>Clinic ID</label>
-                                <input type="number" id="clinicId" value="${myClinicId || 1}">
-                            </div>
+                        <div class="form-group" id="clinicIdGroup" style="display: none;">
+                            <label>Clinic</label>
+                            <select id="clinicId"></select>
+                        </div>
 
-                            <div id="createUserError" style="color: red; margin: 10px 0;"></div>
-                            <div id="createUserSuccess" style="color: green; margin: 10px 0;"></div>
+                        <div id="createUserError" style="color: red; margin: 10px 0;"></div>
+                        <div id="createUserSuccess" style="color: green; margin: 10px 0;"></div>
 
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">Create User</button>
-                                <button type="button" class="btn btn-secondary" onclick="window.location.hash='dashboard'">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </main>
-            </div>
-        `;
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Create User</button>
+                            <button type="button" class="btn btn-secondary" onclick="window.location.hash='dashboard'">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    `;
 
-        // Show clinic field for employee type
+        // Load clinics
+        await this.loadClinicsIntoSelect("clinicId", {
+            preselect: role === ROLES.EMPLOYEE ? myClinicId : null,
+            disable: role === ROLES.EMPLOYEE
+        });
+
+        // Show Clinic field only for employees
         document.getElementById('userType').addEventListener('change', (e) => {
             const clinicGroup = document.getElementById('clinicIdGroup');
+
             if (e.target.value === 'employee') {
                 clinicGroup.style.display = 'block';
                 if (role === ROLES.EMPLOYEE) {
-                    document.getElementById('clinicId').value = myClinicId;
-                    document.getElementById('clinicId').readOnly = true;
+                    clinicsSelect.value = myClinicId;
+                    clinicsSelect.disabled = true;
+                } else {
+                    clinicsSelect.disabled = false;
                 }
             } else {
                 clinicGroup.style.display = 'none';
@@ -1097,11 +1108,11 @@ class App {
                 type: userType
             };
 
-            // For employee type, set clinic_id
+            // Set clinic_id for employee
             if (userType === 'employee') {
                 userData.clinic_id = parseInt(document.getElementById('clinicId').value);
             }
-            // For patient type created by employee, also set clinic_id
+            // Employee creates patient → assign employee's clinic automatically
             else if (userType === 'patient' && role === ROLES.EMPLOYEE) {
                 userData.clinic_id = myClinicId;
             }
@@ -1111,8 +1122,11 @@ class App {
                 document.getElementById('createUserSuccess').textContent = 'User created successfully!';
                 document.getElementById('createUserError').textContent = '';
                 document.getElementById('createUserForm').reset();
+
+                document.getElementById('clinicIdGroup').style.display = 'none';
             } catch (error) {
-                document.getElementById('createUserError').textContent = error.message || 'Failed to create user';
+                document.getElementById('createUserError').textContent =
+                    error.message || 'Failed to create user';
                 document.getElementById('createUserSuccess').textContent = '';
             }
         });
@@ -2003,9 +2017,46 @@ class App {
         auth.clearAuth();
         window.location.hash = 'login';
     }
+
+    //It's one method for loading clinics into select fields in creating user, creating patient. Instead of ID (old version).
+    async loadClinicsIntoSelect(selectId, { preselect = null, disable = false } = {}) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        select.innerHTML = ''; // очистить старые элементы
+
+        try {
+            const response = await api.getClinics();
+            const clinics = response.clinics || [];
+
+            clinics.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.id;
+                option.textContent = `${c.name} (${c.address})`;
+                select.appendChild(option);
+            });
+
+            if (preselect !== null) {
+                select.value = preselect;
+            }
+
+            select.disabled = disable;
+
+        } catch (err) {
+            console.error("Failed to load clinics:", err);
+
+            const option = document.createElement('option');
+            option.textContent = "Failed to load clinics";
+            option.disabled = true;
+            select.appendChild(option);
+        }
+    }
 }
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
 });
+
+
+
