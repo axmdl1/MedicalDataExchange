@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/axmdl1/MedicalDataExchange/core-service/internal/blockchain"
 	"net/http"
 	"strconv"
 
@@ -17,9 +18,15 @@ type App struct {
 
 func New(cfg config.Config) *App {
 	dtClient, _ := client.NewDataTransferClient(cfg.GRPC.DataTransfer)
+
+	dtAdapter := client.NewDataTransferAdapter(dtClient)
+
 	h := handler.NewDataTransferHandler(dtClient)
 	hClinic := handler.NewClinicHandler(dtClient)
-	hPatientAccess := handler.NewPatientAccessHandler(dtClient)
+
+	bc := blockchain.NewBlockchain()
+
+	hPatientAccess := handler.NewPatientAccessHandler(dtAdapter, bc)
 
 	uClient, _ := client.NewUserClient(cfg.GRPC.User)
 	hUser := handler.NewUserHandler(uClient.API)
@@ -69,13 +76,13 @@ func New(cfg config.Config) *App {
 
 	// Patient Access (новый функционал)
 	r.Route("/patient-access", func(r chi.Router) {
-		r.Post("/request", hPatientAccess.CreateAccessRequest)        // Пациент создает запрос
-		r.Post("/approve/{id}", hPatientAccess.ApproveAccessRequest)  // Клиника одобряет
-		r.Post("/reject/{id}", hPatientAccess.RejectAccessRequest)    // Клиника отклоняет
-		r.Get("/data", hPatientAccess.GetTemporaryData)               // Получить данные по токену
-		r.Get("/requests", hPatientAccess.ListAccessRequests)         // Список запросов
-		r.Get("/request/{id}", hPatientAccess.GetAccessRequest)       // Конкретный запрос
-		r.Post("/revoke", hPatientAccess.RevokeAccess)                // Отозвать доступ
+		r.Post("/request", hPatientAccess.CreateAccessRequest)       // Пациент создает запрос
+		r.Post("/approve/{id}", hPatientAccess.ApproveAccessRequest) // Клиника одобряет
+		r.Post("/reject/{id}", hPatientAccess.RejectAccessRequest)   // Клиника отклоняет
+		r.Get("/data", hPatientAccess.GetTemporaryData)              // Получить данные по токену
+		r.Get("/requests", hPatientAccess.ListAccessRequests)        // Список запросов
+		r.Get("/request/{id}", hPatientAccess.GetAccessRequest)      // Конкретный запрос
+		r.Post("/revoke", hPatientAccess.RevokeAccess)               // Отозвать доступ
 	})
 
 	return &App{
