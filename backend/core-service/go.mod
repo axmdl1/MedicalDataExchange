@@ -6,6 +6,8 @@ require (
 	github.com/axmdl1/MedicalDataExchange/backend/blockchain-contracts v0.0.0-20251119192903-c878524464dd
 	github.com/ethereum/go-ethereum v1.16.7
 	github.com/go-chi/chi/v5 v5.2.3
+	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/spf13/viper v1.21.0
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10

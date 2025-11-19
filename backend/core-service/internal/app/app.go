@@ -1,10 +1,10 @@
 package app
 
 import (
-	"github.com/axmdl1/MedicalDataExchange/core-service/internal/blockchain"
 	"net/http"
 	"strconv"
 
+	"github.com/axmdl1/MedicalDataExchange/core-service/internal/blockchain"
 	"github.com/axmdl1/MedicalDataExchange/core-service/internal/client"
 	"github.com/axmdl1/MedicalDataExchange/core-service/internal/config"
 	"github.com/axmdl1/MedicalDataExchange/core-service/internal/handler"
@@ -17,29 +17,32 @@ type App struct {
 }
 
 func New(cfg config.Config) *App {
+
+	// --- gRPC client (настоящий)
 	dtClient, _ := client.NewDataTransferClient(cfg.GRPC.DataTransfer)
 
-	dtAdapter := client.NewDataTransferAdapter(dtClient)
-
-	h := handler.NewDataTransferHandler(dtClient)
-	hClinic := handler.NewClinicHandler(dtClient)
-
+	// --- Blockchain
 	bc := blockchain.NewBlockchain()
 
-	hPatientAccess := handler.NewPatientAccessHandler(dtAdapter, bc)
+	// --- Patient Access Adapter (поверх dtClient)
+	dtAdapter := client.NewDataTransferAdapter(dtClient)
+
+	// --- Handlers
+	h := handler.NewDataTransferHandler(dtClient) // ← ТОЛЬКО dtClient
+	hClinic := handler.NewClinicHandler(dtClient) // ← ТОЛЬКО dtClient
+
+	hPatientAccess := handler.NewPatientAccessHandler(dtAdapter, bc) // ← АДАПТЕР + BLOCKCHAIN
 
 	uClient, _ := client.NewUserClient(cfg.GRPC.User)
 	hUser := handler.NewUserHandler(uClient.API)
 
 	r := chi.NewRouter()
 
-	// Добавляем CORS middleware (должен быть первым!)
 	r.Use(middleware.CORS)
-
-	// Добавляем middleware для извлечения Authorization header
 	r.Use(middleware.ExtractAuthToken)
+	r.Use(middleware.ExtractAuthenticatedUser)
 
-	// MedicalData
+	// --- MedicalData
 	r.Route("/medical-data", func(r chi.Router) {
 		r.Post("/", h.CreateMedicalData)
 		r.Get("/", h.ListMedicalData)
@@ -47,7 +50,7 @@ func New(cfg config.Config) *App {
 		r.Delete("/{id}", h.DeleteMedicalData)
 	})
 
-	// DataTransfer
+	// --- Transfers
 	r.Route("/transfers", func(r chi.Router) {
 		r.Post("/", h.CreateDataTransfer)
 		r.Get("/", h.ListDataTransfers)
@@ -55,7 +58,7 @@ func New(cfg config.Config) *App {
 		r.Post("/decision", h.HandleDecision)
 	})
 
-	// Clinics
+	// --- Clinics
 	r.Route("/clinics", func(r chi.Router) {
 		r.Post("/", hClinic.CreateClinic)
 		r.Get("/", hClinic.ListClinics)
@@ -64,25 +67,24 @@ func New(cfg config.Config) *App {
 		r.Delete("/{id}", hClinic.DeleteClinic)
 	})
 
-	//Users
+	// --- Users
 	r.Route("/users", func(r chi.Router) {
-		r.Post("/", hUser.CreateUser)       // публичная рега пациента или по token-у (employee/admin)
-		r.Get("/", hUser.ListUsers)         // требует Authorization
-		r.Get("/{id}", hUser.GetUser)       // требует Authorization
-		r.Patch("/{id}", hUser.UpdateUser)  // требует Authorization
-		r.Delete("/{id}", hUser.DeleteUser) // требует Authorization
+		r.Post("/", hUser.CreateUser)
+		r.Get("/", hUser.ListUsers)
+		r.Get("/{id}", hUser.GetUser)
+		r.Patch("/{id}", hUser.UpdateUser)
+		r.Delete("/{id}", hUser.DeleteUser)
 	})
-	r.Post("/users/login", hUser.Login) // публичный
+	r.Post("/users/login", hUser.Login)
 
-	// Patient Access (новый функционал)
+	// --- Patient Access (adapter + blockchain)
 	r.Route("/patient-access", func(r chi.Router) {
-		r.Post("/request", hPatientAccess.CreateAccessRequest)       // Пациент создает запрос
-		r.Post("/approve/{id}", hPatientAccess.ApproveAccessRequest) // Клиника одобряет
-		r.Post("/reject/{id}", hPatientAccess.RejectAccessRequest)   // Клиника отклоняет
-		r.Get("/data", hPatientAccess.GetTemporaryData)              // Получить данные по токену
-		r.Get("/requests", hPatientAccess.ListAccessRequests)        // Список запросов
-		r.Get("/request/{id}", hPatientAccess.GetAccessRequest)      // Конкретный запрос
-		r.Post("/revoke", hPatientAccess.RevokeAccess)               // Отозвать доступ
+		r.Post("/request", hPatientAccess.CreateAccessRequest)
+		r.Post("/approve/{id}", hPatientAccess.ApproveAccessRequest)
+		r.Post("/reject/{id}", hPatientAccess.RejectAccessRequest)
+		r.Get("/data", hPatientAccess.GetTemporaryData)
+		r.Get("/requests", hPatientAccess.ListAccessRequests)
+		//r.Get("/request/{id}", hPatientAccess.GetAccessRequest)
 	})
 
 	return &App{

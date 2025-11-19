@@ -35,6 +35,7 @@ class APIClient {
         }
     }
 
+    // LOGIN
     async login(email, password) {
         return this.request(API_CONFIG.ENDPOINTS.LOGIN, {
             method: 'POST',
@@ -42,6 +43,7 @@ class APIClient {
         });
     }
 
+    // USERS
     async getUsers(filters = {}) {
         const params = new URLSearchParams(filters);
         return this.request(`${API_CONFIG.ENDPOINTS.USERS}?${params}`);
@@ -59,7 +61,7 @@ class APIClient {
             if (!currentUser.clinic_id) {
                 throw new Error('Employee has no associated clinic');
             }
-            userToSend967.clinic_id = currentUser.clinic_id;
+            userToSend.clinic_id = currentUser.clinic_id;
         }
 
         return this.request(API_CONFIG.ENDPOINTS.USERS, {
@@ -69,7 +71,6 @@ class APIClient {
     }
 
     async updateUser(id, userData) {
-        // Convert clinic_id to protobuf Int64Value format if present
         const userToSend = { ...userData };
         if (userData.clinic_id !== undefined && userData.clinic_id !== null) {
             userToSend.clinic_id = { value: userData.clinic_id };
@@ -87,7 +88,7 @@ class APIClient {
         });
     }
 
-    // Medical Data APIs
+    // MEDICAL DATA
     async getMedicalData(filters = {}) {
         const params = new URLSearchParams(filters);
         return this.request(`${API_CONFIG.ENDPOINTS.MEDICAL_DATA}?${params}`);
@@ -110,7 +111,7 @@ class APIClient {
         });
     }
 
-    // Transfer APIs
+    // TRANSFERS
     async getTransfers(filters = {}) {
         const params = new URLSearchParams(filters);
         return this.request(`${API_CONFIG.ENDPOINTS.TRANSFERS}?${params}`);
@@ -120,10 +121,10 @@ class APIClient {
         return this.request(API_CONFIG.ENDPOINTS.TRANSFER(id));
     }
 
-    async createTransfer(transferData) {
+    async createTransfer(data) {
         return this.request(API_CONFIG.ENDPOINTS.TRANSFERS, {
             method: 'POST',
-            body: JSON.stringify(transferData)
+            body: JSON.stringify(data)
         });
     }
 
@@ -134,13 +135,13 @@ class APIClient {
             method: 'POST',
             body: JSON.stringify({
                 transfer_id: transferId,
-                confirm: confirm,
-                user_id: user.id  // ← ПЕРЕДАЁТСЯ ИЗ ТОКЕНА!
+                confirm,
+                user_id: user.id
             })
         });
     }
 
-    // Clinic APIs
+    // CLINICS
     async getClinics() {
         return this.request(API_CONFIG.ENDPOINTS.CLINICS);
     }
@@ -169,29 +170,34 @@ class APIClient {
         });
     }
 
-    // Patient Access APIs (новый функционал)
+    // PATIENT ACCESS
     async createAccessRequest(patientId, clinicId, medicalDataId) {
         return this.request('/patient-access/request', {
             method: 'POST',
             body: JSON.stringify({
-                patient_id: parseInt(patientId),
-                clinic_id: parseInt(clinicId),
-                medical_data_id: parseInt(medicalDataId)
+                patient_id: Number(patientId),
+                clinic_id: Number(clinicId),
+                medical_data_id: Number(medicalDataId)
             })
         });
     }
 
-    async approveAccessRequest(requestId, approverId) {
+    async approveAccessRequest(requestId, employeeId) {
         return this.request(`/patient-access/approve/${requestId}`, {
             method: 'POST',
             body: JSON.stringify({
-                approver_id: parseInt(approverId)
+                employee_id: Number(employeeId)
             })
         });
     }
 
-    async getTemporaryData(accessToken) {
-        return this.request(`/patient-access/data?token=${accessToken}`);
+    async rejectAccessRequest(requestId, employeeId) {
+        return this.request(`/patient-access/reject/${requestId}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                employee_id: Number(employeeId)
+            })
+        });
     }
 
     async listAccessRequests(filters = {}) {
@@ -199,25 +205,22 @@ class APIClient {
         return this.request(`/patient-access/requests?${params}`);
     }
 
-    async getAccessRequest(requestId) {
-        return this.request(`/patient-access/request/${requestId}`);
+    async getAccessRequest(id) {
+        return this.request(`/patient-access/request/${id}`);
     }
 
-    async revokeAccess(accessToken) {
+    async getTemporaryData(token) {
+        return this.request(`/patient-access/data?token=${encodeURIComponent(token)}`);
+    }
+
+    async revokeAccess(token) {
         return this.request('/patient-access/revoke', {
             method: 'POST',
             body: JSON.stringify({
-                access_token: accessToken
+                access_token: token
             })
-        });
-    }
-
-    async rejectAccessRequest(requestId) {
-        return this.request(`/patient-access/reject/${requestId}`, {
-            method: 'POST'
         });
     }
 }
 
-// Global API instance
 const api = new APIClient();
