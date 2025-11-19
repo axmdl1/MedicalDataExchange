@@ -11,7 +11,6 @@ class APIClient {
             ...options.headers
         };
 
-        // Add authorization header if token exists
         if (auth.isAuthenticated()) {
             headers['Authorization'] = `Bearer ${auth.getToken()}`;
         }
@@ -36,7 +35,6 @@ class APIClient {
         }
     }
 
-    // Auth APIs
     async login(email, password) {
         return this.request(API_CONFIG.ENDPOINTS.LOGIN, {
             method: 'POST',
@@ -44,7 +42,6 @@ class APIClient {
         });
     }
 
-    // User APIs
     async getUsers(filters = {}) {
         const params = new URLSearchParams(filters);
         return this.request(`${API_CONFIG.ENDPOINTS.USERS}?${params}`);
@@ -58,7 +55,6 @@ class APIClient {
         const currentUser = auth.isAuthenticated() ? auth.getUser() : null;
         const userToSend = { ...userData };
 
-        // Если сотрудник — жёстко привязываем к его клинике
         if (currentUser && currentUser.role === 'employee') {
             if (!currentUser.clinic_id) {
                 throw new Error('Employee has no associated clinic');

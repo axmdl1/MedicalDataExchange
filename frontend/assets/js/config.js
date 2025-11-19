@@ -24,14 +24,12 @@ const API_CONFIG = {
     }
 };
 
-// User roles
 const ROLES = {
     PATIENT: 'patient',
     EMPLOYEE: 'employee',
     ADMIN: 'admin'
 };
 
-// Transfer statuses
 const TRANSFER_STATUS = {
     PENDING: 'pending',
     CONFIRMED: 'confirmed',

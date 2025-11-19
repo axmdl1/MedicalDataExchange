@@ -561,15 +561,10 @@ class App {
             const response = await api.getUsers();
             users = response.users || [];
 
-            // Filter only patients
             users = users.filter(u => u.type === ROLES.PATIENT);
 
-            // Employee sees only his clinic patients (but patient has no clinic_id!)
-            // So we need to check which clinic has medical records for this patient
             if (role === ROLES.EMPLOYEE) {
                 const myClinicId = auth.getClinicId();
-                // For now, show all patients - filtering should be done on backend
-                // Or we fetch medical_data and see which patients belong to this clinic
             }
         } catch (error) {
             console.error('Failed to load patients:', error);
@@ -623,7 +618,6 @@ class App {
                 </main>
             </div>
 
-            <!-- User Modal -->
             <div id="userModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center;">
                 <div style="background: var(--bg-primary); padding: 32px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px var(--shadow);">
                     <h2 id="userModalTitle" style="margin-bottom: 24px; color: var(--text-primary);">Create Patient</h2>
@@ -665,7 +659,6 @@ class App {
 
         await this.loadClinicsIntoSelect("userClinicId");
 
-        // Setup form handler
         document.getElementById('userForm').addEventListener('submit', (e) => this.submitUserForm(e));
     }
 
@@ -685,7 +678,6 @@ class App {
             const response = await api.getMedicalData(filters);
             medicalData = response.medical_data || [];
 
-            // Предзагружаем имена всех пациентов
             const userIds = [...new Set(medicalData.map(r => r.user_id))];
             await Promise.all(userIds.map(id => this.getUserName(id)));
 
@@ -968,7 +960,6 @@ class App {
                 </main>
             </div>
 
-            <!-- User Modal -->
             <div id="userModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center;">
                 <div style="background: var(--bg-primary); padding: 32px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px var(--shadow);">
                     <h2 id="userModalTitle" style="margin-bottom: 24px; color: var(--text-primary);">Create Employee</h2>
@@ -1085,7 +1076,6 @@ class App {
             disable: role === ROLES.EMPLOYEE
         });
 
-        // Show Clinic field only for employees
         document.getElementById('userType').addEventListener('change', (e) => {
             const clinicGroup = document.getElementById('clinicIdGroup');
 
@@ -1144,7 +1134,6 @@ class App {
         const role = auth.getRole();
         const myClinicId = auth.getClinicId();
 
-        // Load patients and clinics for selection
         let patients = [];
         let clinics = [];
         try {
@@ -1291,11 +1280,9 @@ class App {
             const response = await api.getMedicalData(filters);
             medicalRecords = response.medical_data || [];
 
-            // Предзагружаем имена
             const userIds = [...new Set(medicalRecords.map(r => r.user_id))];
             await Promise.all(userIds.map(id => this.getUserName(id)));
 
-            // Load clinics
             const clinicsResponse = await api.getClinics();
             clinics = clinicsResponse.clinics || [];
 
