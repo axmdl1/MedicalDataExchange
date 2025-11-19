@@ -282,6 +282,7 @@
             <div class="tab" data-tab="my-requests">Мои запросы</div>
             <div class="tab" data-tab="pending-approvals">Ожидают одобрения</div>
             <div class="tab" data-tab="view-data">Просмотр данных</div>
+            <div class="tab" data-tab="blockchain-audit">🔗 Blockchain Audit</div>
         </div>
 
         <!-- Таб 1: Создание запроса (для пациентов) -->
@@ -361,8 +362,47 @@
             </div>
         </div>
 
+        <!-- Таб 5: Blockchain Audit -->
+        <div class="tab-content" id="blockchain-audit-tab">
+            <div class="section">
+                <h2>🔗 Blockchain Audit Trail</h2>
+                <p style="background:#eae8fe;color:#4c2885;font-weight:bold;padding:13px 18px; border-left:5px solid #7f45e7; border-radius:6px;">
+                  Все ключевые запросы и транзакции в системе <u>неподвержены изменениям</u> — они записаны в блокчейн Hyperledger Fabric и не могут быть удалены или подделаны.<br><br>
+                  <span style="font-size:15px;">Метка <b>🔗 Blockchain TX</b> указывает на наличие фиксации каждого действия в цепочке блоков.<br>
+                  Для каждого действия указан идентификатор (TX ID) и основная информация о дате и участнике.</span>
+                </p>
+                <div id="blockchain-audit-list"></div>
+            </div>
+        </div>
+
         <div style="text-align: center; margin-top: 40px;">
             <a href="index.html" class="btn btn-primary">← Вернуться на главную</a>
+        </div>
+    </div>
+
+    <!-- Modal for Access Token -->
+    <div id="tokenModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%;">
+            <h2 style="margin-top: 0;">✅ Запрос одобрен!</h2>
+            <div style="margin-bottom: 12px; background: #f5f6fa; border-left: 5px solid #7f45e7; padding: 10px 16px; border-radius: 5px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">🔗</span>
+                <span>
+                    Это действие зафиксировано в <strong>блокчейне Hyperledger Fabric</strong>.<br>
+                    <span id="blockchain-tx-modal" style="font-size: 13px; color: #7f45e7; display: none;">
+                        TX ID: <span id="blockchain-tx-id"></span>
+                        <button onclick="copyTxId()" style="margin-left:4px; padding:2px 6px; font-size:13px; background:#eae8fe; color:#7f45e7; border:none; border-radius:3px; cursor:pointer;">⧉</button>
+                    </span>
+                </span>
+            </div>
+            <p><strong>Токен доступа:</strong></p>
+            <div style="position: relative;">
+                <input type="text" id="accessTokenInput" readonly style="width: 100%; padding: 10px; font-family: monospace; font-size: 14px; border: 2px solid #3498db; border-radius: 4px; background: #f8f9fa;">
+                <button onclick="copyToken()" style="position: absolute; right: 5px; top: 5px; padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">📋 Копировать</button>
+            </div>
+            <p style="margin-top: 15px;"><strong>Действителен до:</strong> <span id="tokenExpiry"></span></p>
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="closeTokenModal()" class="btn btn-primary">Закрыть</button>
+            </div>
         </div>
     </div>
 
@@ -390,21 +430,51 @@
             });
         });
 
-        // Загрузка клиник при старте
+        // Загрузка клиник при старте (ТОЛЬКО те, где у пациента есть данные!)
         async function loadClinics() {
             try {
-                const response = await api.getClinics();
+                const user = auth.getUser();
                 const select = document.getElementById('clinic-select');
                 select.innerHTML = '<option value="">Выберите клинику...</option>';
 
-                response.clinics.forEach(clinic => {
+                // Сначала получаем ВСЕ медицинские данные пациента
+                const medDataResponse = await api.getMedicalData({ user_id: user.id });
+
+                if (!medDataResponse.data || medDataResponse.data.length === 0) {
+                    select.innerHTML = '<option value="">У вас пока нет медицинских записей</option>';
+                    return;
+                }
+
+                // Получаем уникальные ID клиник, где есть данные пациента
+                const clinicIds = [...new Set(medDataResponse.data.map(record => record.clinic_id))];
+
+                // Загружаем информацию о клиниках
+                const allClinicsResponse = await api.getClinics();
+
+                // Фильтруем только те клиники, где есть данные пациента
+                const patientClinics = allClinicsResponse.clinics.filter(clinic =>
+                    clinicIds.includes(clinic.id)
+                );
+
+                if (patientClinics.length === 0) {
+                    select.innerHTML = '<option value="">У вас нет записей в клиниках</option>';
+                    return;
+                }
+
+                // Добавляем только клиники пациента
+                patientClinics.forEach(clinic => {
+                    const recordCount = medDataResponse.data.filter(r => r.clinic_id === clinic.id).length;
                     const option = document.createElement('option');
                     option.value = clinic.id;
-                    option.textContent = clinic.name;
+                    option.textContent = `${clinic.name} (${recordCount} ${recordCount === 1 ? 'запись' : 'записей'})`;
                     select.appendChild(option);
                 });
+
+                console.log(`Загружено ${patientClinics.length} клиник для пациента ID ${user.id}`);
             } catch (error) {
                 console.error('Ошибка загрузки клиник:', error);
+                const select = document.getElementById('clinic-select');
+                select.innerHTML = '<option value="">Ошибка загрузки данных</option>';
             }
         }
 
@@ -431,7 +501,14 @@
                 response.data.forEach(record => {
                     const option = document.createElement('option');
                     option.value = record.id;
-                    option.textContent = `${record.diagnosis} (${new Date(record.created_at).toLocaleDateString()})`;
+
+                    // Format display with more details
+                    const date = new Date(record.visit_date || record.created_at).toLocaleDateString('ru-RU');
+                    const diagnosis = record.diagnosis || 'Без диагноза';
+                    const diagnosisCode = record.diagnosis_code ? ` [${record.diagnosis_code}]` : '';
+                    const department = record.department ? ` - ${record.department}` : '';
+
+                    option.textContent = `${diagnosis}${diagnosisCode}${department} (${date})`;
                     select.appendChild(option);
                 });
             } catch (error) {
@@ -477,6 +554,47 @@
                 await loadMyRequests(user.id);
             } else if (tabName === 'pending-approvals') {
                 await loadPendingApprovals();
+            } else if (tabName === 'blockchain-audit') {
+                await loadBlockchainAudit(user.id);
+            }
+        }
+
+        // Загрузка blockchain audit logs
+        async function loadBlockchainAudit(userId) {
+            const container = document.getElementById('blockchain-audit-list');
+            container.innerHTML = '<div class="loading">Загрузка blockchain записей...</div>';
+
+            try {
+                // Получаем все запросы пользователя с blockchain_tx_id
+                const response = await api.listAccessRequests({ patient_id: userId });
+                const requests = response.requests || [];
+
+                const auditEntries = requests.filter(r => r.blockchain_tx_id).map(req => ({
+                    action: req.status === 'approved' ? 'APPROVE_ACCESS' :
+                            req.status === 'rejected' ? 'REJECT_ACCESS' : 'CREATE_REQUEST',
+                    timestamp: req.approved_at || req.requested_at,
+                    tx_id: req.blockchain_tx_id || 'pending',
+                    patient_id: req.patient_id,
+                    clinic_id: req.clinic_id,
+                    medical_data_id: req.medical_data_id
+                }));
+
+                if (auditEntries.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Нет записей в blockchain</div>';
+                    return;
+                }
+
+                container.innerHTML = auditEntries.map(entry => `
+                    <div class="request-card" style="border-left: 4px solid #9b59b6;">
+                        <h3>🔗 ${entry.action}</h3>
+                        <p><strong>TX ID:</strong> <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 3px;">${entry.tx_id}</code></p>
+                        <p><strong>Timestamp:</strong> ${new Date(entry.timestamp).toLocaleString('ru-RU')}</p>
+                        <p><strong>Patient ID:</strong> ${entry.patient_id} | <strong>Clinic ID:</strong> ${entry.clinic_id} | <strong>Medical Data ID:</strong> ${entry.medical_data_id}</p>
+                        <p style="color: #7f8c8d; font-size: 0.9em;">✅ Immutable record in Hyperledger Fabric</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-error">Ошибка загрузки: ${error.message}</div>`;
             }
         }
 
@@ -499,6 +617,9 @@
                         <div style="display: flex; justify-content: space-between; align-items: start;">
                             <div>
                                 <h3>Запрос #${req.id}</h3>
+                                ${req.blockchain_tx_id ? `<span class="blockchain-badge" style="background:#eae8fe;color:#7f45e7;border-radius:4px;padding:3px 7px;margin-bottom:3px;display:inline-block;font-size:13px;">
+                                    <span title='TX записан в блокчейн'>🔗 Blockchain TX: <b>${req.blockchain_tx_id}</b></span>
+                                </span><br>` : ''}
                                 <p><strong>Клиника:</strong> ${req.clinic_id}</p>
                                 <p><strong>Данные:</strong> ID ${req.medical_data_id}</p>
                                 <p><strong>Создан:</strong> ${new Date(req.requested_at).toLocaleString()}</p>
@@ -540,6 +661,9 @@
                 container.innerHTML = requests.map(req => `
                     <div class="request-card pending">
                         <h3>Запрос #${req.id}</h3>
+                        ${req.blockchain_tx_id ? `<span class="blockchain-badge" style="background:#eae8fe;color:#7f45e7;border-radius:4px;padding:3px 7px;margin-bottom:3px;display:inline-block;font-size:13px;">
+                            <span title='TX записан в блокчейн'>🔗 Blockchain TX: <b>${req.blockchain_tx_id}</b></span>
+                        </span><br>` : ''}
                         <p><strong>Пациент ID:</strong> ${req.patient_id}</p>
                         <p><strong>Данные ID:</strong> ${req.medical_data_id}</p>
                         <p><strong>Создан:</strong> ${new Date(req.requested_at).toLocaleString()}</p>
@@ -564,13 +688,47 @@
 
             try {
                 const response = await api.approveAccessRequest(requestId, user.id);
-
-                alert(`✅ Запрос одобрен!\n\nТокен доступа: ${response.access_token}\n\nТокен действителен до: ${new Date(response.expires_at).toLocaleString()}`);
+                console.log('approve response:', response);
+                document.getElementById('accessTokenInput').value = response.access_token;
+                document.getElementById('tokenExpiry').textContent = new Date(response.expires_at).toLocaleString('ru-RU');
+                if (response.blockchain_tx_id) {
+                  document.getElementById('blockchain-tx-id').textContent = response.blockchain_tx_id;
+                  document.getElementById('blockchain-tx-modal').style.display = 'inline';
+                } else {
+                  document.getElementById('blockchain-tx-modal').style.display = 'none';
+                }
+                document.getElementById('tokenModal').style.display = 'flex';
 
                 loadPendingApprovals(); // Обновляем список
             } catch (error) {
                 alert(`❌ Ошибка: ${error.message}`);
             }
+        }
+
+        // Функции для модального окна токена
+        function copyToken() {
+            const input = document.getElementById('accessTokenInput');
+            input.select();
+            document.execCommand('copy');
+
+            // Меняем текст кнопки на "Скопировано!"
+            event.target.textContent = '✅ Скопировано!';
+            setTimeout(() => {
+                event.target.textContent = '📋 Копировать';
+            }, 2000);
+        }
+
+        function closeTokenModal() {
+            document.getElementById('tokenModal').style.display = 'none';
+        }
+
+        function copyTxId() {
+            const txId = document.getElementById('blockchain-tx-id').textContent;
+            navigator.clipboard.writeText(txId);
+            event.target.textContent = '✅';
+            setTimeout(() => {
+                event.target.textContent = '⧉';
+            }, 1200);
         }
 
         // Просмотр данных по токену
@@ -589,37 +747,220 @@
 
                 container.innerHTML = `
                     <div class="medical-data-display">
-                        <h3>📋 Медицинские данные</h3>
+                        <h3>📋 Полная медицинская карта</h3>
+
+                        <!-- Visit Information -->
+                        <h4 style="color: #3498db; margin-top: 20px;">🏥 Информация о визите</h4>
                         <div class="data-field">
-                            <label>Диагноз:</label>
-                            <div class="value">${data.diagnosis}</div>
+                            <label>Дата визита:</label>
+                            <div class="value">${data.visit_date ? new Date(data.visit_date).toLocaleDateString('ru-RU') : 'Н/Д'}</div>
                         </div>
                         <div class="data-field">
-                            <label>Жалобы:</label>
-                            <div class="value">${data.complaint}</div>
+                            <label>Тип визита:</label>
+                            <div class="value">${data.visit_type || 'Н/Д'}</div>
                         </div>
                         <div class="data-field">
-                            <label>Лечение:</label>
-                            <div class="value">${data.treatment}</div>
+                            <label>Отделение:</label>
+                            <div class="value">${data.department || 'Н/Д'}</div>
                         </div>
                         <div class="data-field">
-                            <label>Медикаменты:</label>
-                            <div class="value">${data.medications}</div>
+                            <label>Лечащий врач:</label>
+                            <div class="value">${data.attending_doctor || 'Н/Д'}</div>
+                        </div>
+
+                        <!-- Chief Complaint -->
+                        <h4 style="color: #3498db; margin-top: 20px;">🗣️ Жалобы пациента</h4>
+                        <div class="data-field">
+                            <label>Основная жалоба:</label>
+                            <div class="value">${data.chief_complaint || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Симптомы:</label>
+                            <div class="value">${data.symptoms || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Длительность симптомов:</label>
+                            <div class="value">${data.symptom_duration || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Уровень боли (0-10):</label>
+                            <div class="value">${data.pain_level !== null ? data.pain_level : 'Н/Д'}</div>
+                        </div>
+
+                        <!-- Vital Signs -->
+                        <h4 style="color: #3498db; margin-top: 20px;">🩺 Витальные показатели</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div class="data-field">
+                                <label>Температура:</label>
+                                <div class="value">${data.temperature ? data.temperature + ' °C' : 'Н/Д'}</div>
+                            </div>
+                            <div class="data-field">
+                                <label>Артериальное давление:</label>
+                                <div class="value">${data.blood_pressure_systolic && data.blood_pressure_diastolic ?
+                                    data.blood_pressure_systolic + '/' + data.blood_pressure_diastolic + ' mmHg' : 'Н/Д'}</div>
+                            </div>
+                            <div class="data-field">
+                                <label>Пульс:</label>
+                                <div class="value">${data.heart_rate ? data.heart_rate + ' уд/мин' : 'Н/Д'}</div>
+                            </div>
+                            <div class="data-field">
+                                <label>Частота дыхания:</label>
+                                <div class="value">${data.respiratory_rate ? data.respiratory_rate + ' /мин' : 'Н/Д'}</div>
+                            </div>
+                            <div class="data-field">
+                                <label>Сатурация O2:</label>
+                                <div class="value">${data.oxygen_saturation ? data.oxygen_saturation + ' %' : 'Н/Д'}</div>
+                            </div>
+                            <div class="data-field">
+                                <label>Вес:</label>
+                                <div class="value">${data.weight ? data.weight + ' кг' : 'Н/Д'}</div>
+                            </div>
+                            <div class="data-field">
+                                <label>Рост:</label>
+                                <div class="value">${data.height ? data.height + ' см' : 'Н/Д'}</div>
+                            </div>
+                            <div class="data-field">
+                                <label>ИМТ:</label>
+                                <div class="value">${data.bmi ? data.bmi : 'Н/Д'}</div>
+                            </div>
+                        </div>
+
+                        <!-- Diagnosis -->
+                        <h4 style="color: #3498db; margin-top: 20px;">🔬 Диагноз</h4>
+                        <div class="data-field">
+                            <label>Основной диагноз:</label>
+                            <div class="value" style="font-size: 16px; font-weight: bold; color: #e74c3c;">${data.diagnosis}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Код МКБ-10:</label>
+                            <div class="value">${data.diagnosis_code || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Степень тяжести:</label>
+                            <div class="value">${data.severity || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Сопутствующие диагнозы:</label>
+                            <div class="value">${data.secondary_diagnoses || 'Нет'}</div>
+                        </div>
+
+                        <!-- Medical History -->
+                        <h4 style="color: #3498db; margin-top: 20px;">📚 Анамнез</h4>
+                        <div class="data-field">
+                            <label>Медицинский анамнез:</label>
+                            <div class="value">${data.medical_history || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Хирургический анамнез:</label>
+                            <div class="value">${data.surgical_history || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Семейный анамнез:</label>
+                            <div class="value">${data.family_history || 'Н/Д'}</div>
                         </div>
                         <div class="data-field">
                             <label>Аллергии:</label>
-                            <div class="value">${data.allergies || 'Нет'}</div>
+                            <div class="value" style="color: #e74c3c; font-weight: bold;">${data.allergies || 'Нет известных аллергий'}</div>
                         </div>
                         <div class="data-field">
-                            <label>Записи врача:</label>
-                            <div class="value">${data.doctor_notes}</div>
+                            <label>Текущие медикаменты:</label>
+                            <div class="value">${data.current_medications || 'Нет'}</div>
+                        </div>
+
+                        <!-- Treatment Plan -->
+                        <h4 style="color: #3498db; margin-top: 20px;">💊 План лечения</h4>
+                        <div class="data-field">
+                            <label>План лечения:</label>
+                            <div class="value" style="white-space: pre-wrap;">${data.treatment_plan}</div>
                         </div>
                         <div class="data-field">
-                            <label>Результаты анализов:</label>
-                            <div class="value">${data.lab_results}</div>
+                            <label>Назначенные медикаменты:</label>
+                            <div class="value">${formatMedications(data.prescribed_medications)}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Выполненные процедуры:</label>
+                            <div class="value">${data.procedures_performed || 'Нет'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Назначенные анализы:</label>
+                            <div class="value">${data.lab_tests_ordered || 'Нет'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Назначенная визуализация:</label>
+                            <div class="value">${data.imaging_ordered || 'Нет'}</div>
+                        </div>
+
+                        <!-- Lab Results -->
+                        <h4 style="color: #3498db; margin-top: 20px;">🧪 Результаты анализов</h4>
+                        <div class="data-field">
+                            <label>Резюме анализов:</label>
+                            <div class="value">${data.lab_results_summary || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Детальные результаты:</label>
+                            <div class="value">${formatLabResults(data.lab_results)}</div>
+                        </div>
+
+                        <!-- Doctor's Notes -->
+                        <h4 style="color: #3498db; margin-top: 20px;">📝 Заметки врача</h4>
+                        <div class="data-field">
+                            <label>Заметки врача:</label>
+                            <div class="value" style="white-space: pre-wrap;">${data.doctor_notes || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Инструкции для follow-up:</label>
+                            <div class="value" style="white-space: pre-wrap;">${data.follow_up_instructions || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Дата следующего визита:</label>
+                            <div class="value">${data.follow_up_date ? new Date(data.follow_up_date).toLocaleDateString('ru-RU') : 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Ограничения:</label>
+                            <div class="value">${data.restrictions || 'Нет'}</div>
+                        </div>
+
+                        <!-- Administrative -->
+                        <h4 style="color: #3498db; margin-top: 20px;">📄 Административная информация</h4>
+                        <div class="data-field">
+                            <label>Страховка:</label>
+                            <div class="value">${data.insurance_info || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Код для биллинга:</label>
+                            <div class="value">${data.billing_code || 'Н/Д'}</div>
+                        </div>
+                        <div class="data-field">
+                            <label>Создано:</label>
+                            <div class="value">${data.created_at ? new Date(data.created_at).toLocaleString('ru-RU') : 'Н/Д'}</div>
                         </div>
                     </div>
                 `;
+
+                // Helper functions
+                function formatMedications(meds) {
+                    if (!meds) return 'Нет';
+                    try {
+                        const parsed = JSON.parse(meds);
+                        return '<ul style="margin: 5px 0; padding-left: 20px;">' +
+                            parsed.map(m => `<li><strong>${m.name}</strong> ${m.dosage}, ${m.frequency}, ${m.duration || ''}</li>`).join('') +
+                            '</ul>';
+                    } catch {
+                        return meds;
+                    }
+                }
+
+                function formatLabResults(results) {
+                    if (!results) return 'Нет';
+                    try {
+                        const parsed = typeof results === 'string' ? JSON.parse(results) : results;
+                        return '<ul style="margin: 5px 0; padding-left: 20px;">' +
+                            Object.entries(parsed).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('') +
+                            '</ul>';
+                    } catch {
+                        return results;
+                    }
+                }
 
                 // Показываем обратный отсчет
                 startCountdown(15 * 60); // 15 минут

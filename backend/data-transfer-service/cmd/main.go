@@ -11,19 +11,16 @@ import (
 
 func main() {
 	cfg := config.Load()
-	app := app.New(cfg)
+	application := app.New(cfg)
 
-	// Запуск
-	go func() {
-		if err := app.GRPC.Run(); err != nil {
-			panic(err)
-		}
-	}()
+	// Start application (gRPC server and cleanup scheduler)
+	application.Start()
 
 	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	app.GRPC.Stop()
+	// Stop all services
+	application.Stop()
 }

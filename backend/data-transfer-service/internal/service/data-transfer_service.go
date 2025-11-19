@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -11,6 +12,22 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/rs/zerolog"
 )
+
+// Helper function to convert string to sql.NullString
+func toNullString(s string) sql.NullString {
+	return sql.NullString{
+		String: s,
+		Valid:  s != "",
+	}
+}
+
+// Helper function to convert sql.NullString to string
+func nullStringToString(ns sql.NullString) string {
+	if ns.Valid {
+		return ns.String
+	}
+	return ""
+}
 
 type DataTransferService interface {
 	CreateMedicalData(ctx context.Context, data *dtpb.MedicalData) (*dtpb.MedicalData, error)
@@ -45,37 +62,57 @@ func NewDataTransferService(repo repository.DataTransferRepository) DataTransfer
 func (s *dataTransferService) CreateMedicalData(ctx context.Context, data *dtpb.MedicalData) (*dtpb.MedicalData, error) {
 	log := zerolog.Ctx(ctx).With().Str("component", "data_transfer_service").Str("method", "CreateMedicalData").Logger()
 
-	dbModel := &model.MedicalData{}
-	if err := copier.Copy(dbModel, data); err != nil {
-		log.Error().Err(err).Msg("copy_failed_proto_to_model")
-		return nil, err
+	// Manually map proto to model to ensure correct field mapping
+	dbModel := &model.MedicalData{
+		UserID:   data.UserId,
+		ClinicID: data.ClinicId,
+		Diagnosis: data.Diagnosis,
+		TreatmentPlan: data.Treatment,
 	}
 
-	if data.CreatedAt != "" {
-		if t, err := time.Parse(time.RFC3339, data.CreatedAt); err == nil {
-			dbModel.CreatedAt = t
-		}
+	// Map optional fields using sql.NullString
+	if data.Complaint != "" {
+		dbModel.ChiefComplaint = toNullString(data.Complaint)
 	}
-	if data.UpdatedAt != "" {
-		if t, err := time.Parse(time.RFC3339, data.UpdatedAt); err == nil {
-			dbModel.UpdatedAt = t
-		}
+	if data.Medications != "" {
+		dbModel.PrescribedMedications = toNullString(data.Medications)
 	}
+	if data.Allergies != "" {
+		dbModel.Allergies = toNullString(data.Allergies)
+	}
+	if data.DoctorNotes != "" {
+		dbModel.DoctorNotes = toNullString(data.DoctorNotes)
+	}
+	if data.LabResults != "" {
+		dbModel.LabResultsSummary = toNullString(data.LabResults)
+	}
+
+	// Set timestamps
+	dbModel.CreatedAt = time.Now()
+	dbModel.UpdatedAt = time.Now()
 
 	if err := s.repo.CreateMedicalData(ctx, dbModel); err != nil {
 		log.Error().Err(err).Msg("repo_create_failed")
 		return nil, err
 	}
 
-	var resp dtpb.MedicalData
-	if err := copier.Copy(&resp, dbModel); err != nil {
-		log.Error().Err(err).Msg("copy_failed_model_to_proto")
-		return nil, err
+	// Convert back to proto
+	resp := &dtpb.MedicalData{
+		Id:          dbModel.ID,
+		UserId:      dbModel.UserID,
+		ClinicId:    dbModel.ClinicID,
+		Diagnosis:   dbModel.Diagnosis,
+		Complaint:   nullStringToString(dbModel.ChiefComplaint),
+		Treatment:   dbModel.TreatmentPlan,
+		Medications: nullStringToString(dbModel.PrescribedMedications),
+		Allergies:   nullStringToString(dbModel.Allergies),
+		DoctorNotes: nullStringToString(dbModel.DoctorNotes),
+		LabResults:  nullStringToString(dbModel.LabResultsSummary),
+		CreatedAt:   dbModel.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   dbModel.UpdatedAt.Format(time.RFC3339),
 	}
 
-	resp.CreatedAt = dbModel.CreatedAt.Format(time.RFC3339)
-	resp.UpdatedAt = dbModel.UpdatedAt.Format(time.RFC3339)
-	return &resp, nil
+	return resp, nil
 }
 
 func (s *dataTransferService) GetMedicalData(ctx context.Context, id int64) (*dtpb.MedicalData, error) {
@@ -84,14 +121,22 @@ func (s *dataTransferService) GetMedicalData(ctx context.Context, id int64) (*dt
 		return nil, err
 	}
 
-	var resp dtpb.MedicalData
-	if err := copier.Copy(&resp, dbModel); err != nil {
-		return nil, err
+	resp := &dtpb.MedicalData{
+		Id:          dbModel.ID,
+		UserId:      dbModel.UserID,
+		ClinicId:    dbModel.ClinicID,
+		Diagnosis:   dbModel.Diagnosis,
+		Complaint:   nullStringToString(dbModel.ChiefComplaint),
+		Treatment:   dbModel.TreatmentPlan,
+		Medications: nullStringToString(dbModel.PrescribedMedications),
+		Allergies:   nullStringToString(dbModel.Allergies),
+		DoctorNotes: nullStringToString(dbModel.DoctorNotes),
+		LabResults:  nullStringToString(dbModel.LabResultsSummary),
+		CreatedAt:   dbModel.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   dbModel.UpdatedAt.Format(time.RFC3339),
 	}
 
-	resp.CreatedAt = dbModel.CreatedAt.Format(time.RFC3339)
-	resp.UpdatedAt = dbModel.UpdatedAt.Format(time.RFC3339)
-	return &resp, nil
+	return resp, nil
 }
 
 func (s *dataTransferService) ListMedicalData(ctx context.Context, userID, clinicID *int64) ([]*dtpb.MedicalData, error) {
@@ -102,12 +147,20 @@ func (s *dataTransferService) ListMedicalData(ctx context.Context, userID, clini
 
 	var result []*dtpb.MedicalData
 	for i := range dbModels {
-		md := &dtpb.MedicalData{}
-		if err := copier.Copy(md, &dbModels[i]); err != nil {
-			return nil, err
+		md := &dtpb.MedicalData{
+			Id:          dbModels[i].ID,
+			UserId:      dbModels[i].UserID,
+			ClinicId:    dbModels[i].ClinicID,
+			Diagnosis:   dbModels[i].Diagnosis,
+			Complaint:   nullStringToString(dbModels[i].ChiefComplaint),
+			Treatment:   dbModels[i].TreatmentPlan,
+			Medications: nullStringToString(dbModels[i].PrescribedMedications),
+			Allergies:   nullStringToString(dbModels[i].Allergies),
+			DoctorNotes: nullStringToString(dbModels[i].DoctorNotes),
+			LabResults:  nullStringToString(dbModels[i].LabResultsSummary),
+			CreatedAt:   dbModels[i].CreatedAt.Format(time.RFC3339),
+			UpdatedAt:   dbModels[i].UpdatedAt.Format(time.RFC3339),
 		}
-		md.CreatedAt = dbModels[i].CreatedAt.Format(time.RFC3339)
-		md.UpdatedAt = dbModels[i].UpdatedAt.Format(time.RFC3339)
 		result = append(result, md)
 	}
 	return result, nil
@@ -194,15 +247,15 @@ func (s *dataTransferService) HandleDataTransferDecision(ctx context.Context, tr
 
 		// Создаём новый объект без ID, чтобы база сгенерировала уникальный ключ
 		newMedicalData := &model.MedicalData{
-			UserID:      originalData.UserID,
-			ClinicID:    transfer.ToClinicID,
-			Diagnosis:   originalData.Diagnosis,
-			Complaint:   originalData.Complaint,
-			Treatment:   originalData.Treatment,
-			Medications: originalData.Medications,
-			Allergies:   originalData.Allergies,
-			DoctorNotes: originalData.DoctorNotes,
-			LabResults:  originalData.LabResults,
+			UserID:                originalData.UserID,
+			ClinicID:              transfer.ToClinicID,
+			Diagnosis:             originalData.Diagnosis,
+			ChiefComplaint:        originalData.ChiefComplaint,
+			TreatmentPlan:         originalData.TreatmentPlan,
+			PrescribedMedications: originalData.PrescribedMedications,
+			Allergies:             originalData.Allergies,
+			DoctorNotes:           originalData.DoctorNotes,
+			LabResultsSummary:     originalData.LabResultsSummary,
 			CreatedAt:   time.Now(),
 			UpdatedAt:   time.Now(),
 		}

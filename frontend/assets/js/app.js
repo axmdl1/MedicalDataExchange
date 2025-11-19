@@ -2089,6 +2089,9 @@ class App {
                             <button class="tab-btn" data-tab="view-data">
                                 <i class="fas fa-eye"></i> View Data
                             </button>
+                            <button class="tab-btn" data-tab="blockchain-audit">
+                                <i class="fas fa-link"></i> Blockchain Audit
+                            </button>
                         ` : ''}
                         ${role === ROLES.EMPLOYEE ? `
                             <button class="tab-btn active" data-tab="pending-approvals">
@@ -2096,6 +2099,9 @@ class App {
                             </button>
                             <button class="tab-btn" data-tab="all-requests">
                                 <i class="fas fa-list"></i> All Requests
+                            </button>
+                            <button class="tab-btn" data-tab="blockchain-audit">
+                                <i class="fas fa-link"></i> Blockchain Audit
                             </button>
                         ` : ''}
                     </div>
@@ -2182,6 +2188,21 @@ class App {
                     <div id="temporary-data-display"></div>
                 </div>
             </div>
+
+            <!-- Blockchain Audit Tab -->
+            <div class="tab-pane" id="blockchain-audit">
+                <div class="card">
+                    <h3><i class="fas fa-link"></i> Blockchain Audit Trail</h3>
+                    <p class="info-text" style="background:#eae8fe;color:#4c2885;padding:13px 18px; border-left:5px solid #7f45e7; border-radius:6px;">
+                        <i class="fas fa-shield-alt"></i>
+                        All key transactions in the system are <strong>immutable</strong> — they are recorded in Hyperledger Fabric blockchain and cannot be deleted or tampered with.
+                        <br><br>
+                        <span style="font-size:15px;">The <b>🔗 Blockchain TX</b> badge indicates each action has been permanently recorded in the blockchain.
+                        TX ID uniquely identifies the transaction.</span>
+                    </p>
+                    <div id="blockchain-audit-list"></div>
+                </div>
+            </div>
         `;
     }
 
@@ -2200,6 +2221,21 @@ class App {
                 <div class="card">
                     <h3>All Access Requests</h3>
                     <div id="all-requests-list"></div>
+                </div>
+            </div>
+
+            <!-- Blockchain Audit Tab -->
+            <div class="tab-pane" id="blockchain-audit">
+                <div class="card">
+                    <h3><i class="fas fa-link"></i> Blockchain Audit Trail</h3>
+                    <p class="info-text" style="background:#eae8fe;color:#4c2885;padding:13px 18px; border-left:5px solid #7f45e7; border-radius:6px;">
+                        <i class="fas fa-shield-alt"></i>
+                        All key transactions in the system are <strong>immutable</strong> — they are recorded in Hyperledger Fabric blockchain and cannot be deleted or tampered with.
+                        <br><br>
+                        <span style="font-size:15px;">The <b>🔗 Blockchain TX</b> badge indicates each action has been permanently recorded in the blockchain.
+                        TX ID uniquely identifies the transaction.</span>
+                    </p>
+                    <div id="blockchain-audit-list"></div>
                 </div>
             </div>
         `;
@@ -2223,10 +2259,16 @@ class App {
                 btn.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
 
-                // Перезагружаем данные при переключении табов для пациента
+                // Перезагружаем данные при переключении табов
                 if (role === ROLES.PATIENT) {
                     if (tabId === 'my-requests') {
                         await this.loadMyRequests(user.id);
+                    } else if (tabId === 'blockchain-audit') {
+                        await this.loadBlockchainAudit();
+                    }
+                } else if (role === ROLES.EMPLOYEE) {
+                    if (tabId === 'blockchain-audit') {
+                        await this.loadBlockchainAudit();
                     }
                 }
             });
@@ -2446,6 +2488,12 @@ class App {
                             <span class="request-id">Request #${req.id}</span>
                             <span class="badge badge-${statusClass}">${statusText}</span>
                         </div>
+                        ${req.blockchain_tx_id ? `
+                            <div style="background:#eae8fe;color:#7f45e7;border-radius:4px;padding:6px 10px;margin:10px 0;font-size:13px;">
+                                <i class="fas fa-link"></i> <strong>Blockchain TX:</strong>
+                                <code style="background:#fff;padding:2px 6px;border-radius:3px;margin-left:5px;">${req.blockchain_tx_id}</code>
+                            </div>
+                        ` : ''}
                         <div class="request-details">
                             <p><strong>Clinic ID:</strong> ${req.clinic_id}</p>
                             <p><strong>Medical Data ID:</strong> ${req.medical_data_id}</p>
@@ -2626,12 +2674,66 @@ class App {
 
         try {
             const result = await api.approveAccessRequest(requestId, user.id);
-            alert(`✅ Request approved!\n\nAccess Token: ${result.access_token}\n\nExpires: ${new Date(result.expires_at).toLocaleString()}\n\nPlease give this token to the patient.`);
+
+            // Show modal with token and blockchain TX ID
+            this.showTokenModal(result.access_token, result.expires_at, result.blockchain_tx_id);
+
             await this.loadPendingRequests();
             await this.loadAllRequests();
         } catch (err) {
             alert(`❌ Failed to approve request: ${err.message}`);
         }
+    }
+
+    showTokenModal(accessToken, expiresAt, blockchainTxId) {
+        // Remove existing modal if any
+        const existingModal = document.getElementById('token-modal');
+        if (existingModal) existingModal.remove();
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.id = 'token-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+        modal.innerHTML = `
+            <div style="background:white;padding:30px;border-radius:8px;max-width:600px;width:90%;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                <h2 style="margin-top:0;color:#27ae60;">✅ Request Approved!</h2>
+                ${blockchainTxId ? `
+                    <div style="margin-bottom:12px;background:#f5f6fa;border-left:5px solid #7f45e7;padding:10px 16px;border-radius:5px;display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:24px;">🔗</span>
+                        <div>
+                            This action is recorded in <strong>Hyperledger Fabric blockchain</strong>.
+                            <div style="margin-top:5px;">
+                                <strong>TX ID:</strong>
+                                <code style="background:#eae8fe;color:#7f45e7;padding:2px 6px;border-radius:3px;font-size:12px;margin-left:5px;">${blockchainTxId}</code>
+                                <button onclick="navigator.clipboard.writeText('${blockchainTxId}');this.textContent='✓';setTimeout(()=>this.textContent='⧉',1000);"
+                                    style="margin-left:4px;padding:2px 6px;font-size:13px;background:#eae8fe;color:#7f45e7;border:none;border-radius:3px;cursor:pointer;">⧉</button>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+                <p><strong>Access Token:</strong></p>
+                <div style="position:relative;margin-bottom:15px;">
+                    <input type="text" id="modal-access-token" readonly value="${accessToken}"
+                        style="width:100%;padding:10px;font-family:monospace;font-size:14px;border:2px solid #3498db;border-radius:4px;background:#f8f9fa;">
+                    <button onclick="document.getElementById('modal-access-token').select();document.execCommand('copy');this.textContent='✓ Copied';setTimeout(()=>this.textContent='📋 Copy',2000);"
+                        style="position:absolute;right:5px;top:5px;padding:8px 15px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;">📋 Copy</button>
+                </div>
+                <p><strong>Valid until:</strong> ${new Date(expiresAt).toLocaleString()}</p>
+                <p style="color:#7f8c8d;font-size:14px;">Please give this token to the patient so they can view their medical data.</p>
+                <div style="margin-top:20px;text-align:right;">
+                    <button onclick="document.getElementById('token-modal').remove();"
+                        style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Close</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
     }
 
     async rejectRequest(requestId) {
@@ -2644,6 +2746,70 @@ class App {
             await this.loadAllRequests();
         } catch (err) {
             alert(`❌ Failed to reject request: ${err.message}`);
+        }
+    }
+
+    async loadBlockchainAudit() {
+        const container = document.getElementById('blockchain-audit-list');
+        const user = auth.getUser();
+        const role = auth.getRole();
+
+        if (!container) return;
+
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading blockchain records...</div>';
+
+        try {
+            // Get all requests with blockchain_tx_id
+            const filters = role === ROLES.PATIENT ? { patient_id: user.id } : {};
+            const response = await api.listAccessRequests(filters);
+            const requests = response.requests || [];
+
+            const auditEntries = requests
+                .filter(r => r.blockchain_tx_id)
+                .map(req => ({
+                    action: req.status === 'approved' ? 'APPROVE_ACCESS' :
+                            req.status === 'rejected' ? 'REJECT_ACCESS' : 'CREATE_REQUEST',
+                    timestamp: req.approved_at || req.requested_at,
+                    tx_id: req.blockchain_tx_id,
+                    patient_id: req.patient_id,
+                    clinic_id: req.clinic_id,
+                    medical_data_id: req.medical_data_id,
+                    request_id: req.id,
+                    status: req.status
+                }));
+
+            if (auditEntries.length === 0) {
+                container.innerHTML = '<p class="no-data"><i class="fas fa-info-circle"></i> No blockchain records found</p>';
+                return;
+            }
+
+            container.innerHTML = auditEntries.map(entry => {
+                const statusColor = entry.status === 'approved' ? '#27ae60' :
+                                   entry.status === 'rejected' ? '#e74c3c' : '#9b59b6';
+                return `
+                    <div class="request-card" style="border-left: 4px solid ${statusColor};">
+                        <div class="request-header">
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-link" style="color: ${statusColor};"></i>
+                                ${entry.action}
+                            </h3>
+                            <span class="badge badge-success" style="background: #eae8fe; color: #7f45e7;">
+                                Request #${entry.request_id}
+                            </span>
+                        </div>
+                        <div class="request-details" style="margin-top: 15px;">
+                            <p><strong>🔗 TX ID:</strong> <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 13px;">${entry.tx_id}</code></p>
+                            <p><strong>⏰ Timestamp:</strong> ${new Date(entry.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
+                            <p><strong>👤 Patient ID:</strong> ${entry.patient_id} | <strong>🏥 Clinic ID:</strong> ${entry.clinic_id} | <strong>📄 Medical Data ID:</strong> ${entry.medical_data_id}</p>
+                            <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                                <i class="fas fa-shield-alt"></i> Immutable record in Hyperledger Fabric blockchain
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (err) {
+            container.innerHTML = `<div class="error"><i class="fas fa-exclamation-circle"></i> Error loading blockchain records: ${err.message}</div>`;
         }
     }
 }

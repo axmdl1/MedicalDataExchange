@@ -1,0 +1,152 @@
+# Configuration for channel artifacts generation
+
+Organizations:
+  - &OrdererOrg
+      Name: OrdererMSP
+      ID: OrdererMSP
+      MSPDir: crypto-config/ordererOrganizations/medical.com/msp
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('OrdererMSP.member')"
+        Writers:
+          Type: Signature
+          Rule: "OR('OrdererMSP.member')"
+        Admins:
+          Type: Signature
+          Rule: "OR('OrdererMSP.admin')"
+
+  - &Clinic1
+      Name: Clinic1MSP
+      ID: Clinic1MSP
+      MSPDir: crypto-config/peerOrganizations/clinic1.medical.com/msp
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('Clinic1MSP.admin', 'Clinic1MSP.peer', 'Clinic1MSP.client')"
+        Writers:
+          Type: Signature
+          Rule: "OR('Clinic1MSP.admin', 'Clinic1MSP.client')"
+        Admins:
+          Type: Signature
+          Rule: "OR('Clinic1MSP.admin')"
+        Endorsement:
+          Type: Signature
+          Rule: "OR('Clinic1MSP.peer')"
+      AnchorPeers:
+        - Host: peer0.clinic1.medical.com
+          Port: 7051
+
+  - &Clinic2
+      Name: Clinic2MSP
+      ID: Clinic2MSP
+      MSPDir: crypto-config/peerOrganizations/clinic2.medical.com/msp
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('Clinic2MSP.admin', 'Clinic2MSP.peer', 'Clinic2MSP.client')"
+        Writers:
+          Type: Signature
+          Rule: "OR('Clinic2MSP.admin', 'Clinic2MSP.client')"
+        Admins:
+          Type: Signature
+          Rule: "OR('Clinic2MSP.admin')"
+        Endorsement:
+          Type: Signature
+          Rule: "OR('Clinic2MSP.peer')"
+      AnchorPeers:
+        - Host: peer0.clinic2.medical.com
+          Port: 9051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: solo
+  Addresses:
+    - orderer.medical.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  TwoOrgsOrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      MedicalConsortium:
+        Organizations:
+          - *Clinic1
+          - *Clinic2
+
+  TwoOrgsChannel:
+    Consortium: MedicalConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Clinic1
+        - *Clinic2
+      Capabilities:
+        <<: *ApplicationCapabilities

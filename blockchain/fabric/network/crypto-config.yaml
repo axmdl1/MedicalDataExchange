@@ -1,0 +1,24 @@
+# Crypto configuration for Medical Data Exchange Blockchain Network
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: medical.com
+    Specs:
+      - Hostname: orderer
+
+PeerOrgs:
+  - Name: Clinic1
+    Domain: clinic1.medical.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: Clinic2
+    Domain: clinic2.medical.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1

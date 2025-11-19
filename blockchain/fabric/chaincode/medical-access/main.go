@@ -52,6 +52,21 @@ type DataTransferLog struct {
 	DataHash      string    `json:"data_hash"` // Hash данных для аудита
 }
 
+// AuditLog представляет полный аудит-лог всех действий
+type AuditLog struct {
+	ID          string    `json:"id"`
+	Action      string    `json:"action"` // create_request, approve, reject, revoke, validate_access
+	EntityType  string    `json:"entity_type"` // access_request, temporary_access, transfer
+	EntityID    string    `json:"entity_id"`
+	ActorID     string    `json:"actor_id"` // ID пользователя, выполнившего действие
+	ActorType   string    `json:"actor_type"` // patient, clinic_admin, system
+	PatientID   string    `json:"patient_id"`
+	ClinicID    string    `json:"clinic_id"`
+	Details     string    `json:"details"` // JSON с дополнительными деталями
+	Timestamp   time.Time `json:"timestamp"`
+	TxID        string    `json:"tx_id"` // Transaction ID в блокчейне
+}
+
 // InitLedger инициализирует леджер
 func (c *MedicalAccessContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	return nil
@@ -85,7 +100,15 @@ func (c *MedicalAccessContract) CreateAccessRequest(
 		return err
 	}
 
-	return ctx.GetStub().PutState(fmt.Sprintf("REQUEST_%s", id), requestJSON)
+	err = ctx.GetStub().PutState(fmt.Sprintf("REQUEST_%s", id), requestJSON)
+	if err != nil {
+		return err
+	}
+
+	// Create audit log
+	_ = c.CreateAuditLog(ctx, "create_request", "access_request", id, patientID, "patient", patientID, clinicID, fmt.Sprintf("Request type: %s", requestType))
+
+	return nil
 }
 
 // ApproveAccessRequest одобряет запрос на доступ (вызывается клиникой)
@@ -149,8 +172,14 @@ func (c *MedicalAccessContract) ApproveAccessRequest(
 			return err
 		}
 
-		return ctx.GetStub().PutState(fmt.Sprintf("ACCESS_%s", requestID), accessJSON)
+		err = ctx.GetStub().PutState(fmt.Sprintf("ACCESS_%s", requestID), accessJSON)
+		if err != nil {
+			return err
+		}
 	}
+
+	// Create audit log
+	_ = c.CreateAuditLog(ctx, "approve_request", "access_request", requestID, approverID, "clinic_admin", request.PatientID, request.ClinicID, fmt.Sprintf("Access granted until %s", expiresAt.Format(time.RFC3339)))
 
 	return nil
 }
@@ -185,7 +214,15 @@ func (c *MedicalAccessContract) RejectAccessRequest(
 		return err
 	}
 
-	return ctx.GetStub().PutState(fmt.Sprintf("REQUEST_%s", requestID), updatedRequestJSON)
+	err = ctx.GetStub().PutState(fmt.Sprintf("REQUEST_%s", requestID), updatedRequestJSON)
+	if err != nil {
+		return err
+	}
+
+	// Create audit log
+	_ = c.CreateAuditLog(ctx, "reject_request", "access_request", requestID, "", "clinic_admin", request.PatientID, request.ClinicID, "Access request rejected")
+
+	return nil
 }
 
 // ValidateAccess проверяет действительность токена доступа
@@ -334,6 +371,76 @@ func (c *MedicalAccessContract) GetPatientAccessHistory(
 	// В реальной реализации использовать CouchDB rich queries
 	// Для упрощения возвращаем пустой массив
 	return []*AccessRequest{}, nil
+}
+
+// CreateAuditLog создает запись аудита в блокчейне
+func (c *MedicalAccessContract) CreateAuditLog(
+	ctx contractapi.TransactionContextInterface,
+	action string,
+	entityType string,
+	entityID string,
+	actorID string,
+	actorType string,
+	patientID string,
+	clinicID string,
+	details string,
+) error {
+	txID := ctx.GetStub().GetTxID()
+
+	auditLog := AuditLog{
+		ID:         fmt.Sprintf("AUDIT_%s_%d", txID, time.Now().UnixNano()),
+		Action:     action,
+		EntityType: entityType,
+		EntityID:   entityID,
+		ActorID:    actorID,
+		ActorType:  actorType,
+		PatientID:  patientID,
+		ClinicID:   clinicID,
+		Details:    details,
+		Timestamp:  time.Now(),
+		TxID:       txID,
+	}
+
+	auditJSON, err := json.Marshal(auditLog)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(fmt.Sprintf("AUDIT_%s", auditLog.ID), auditJSON)
+}
+
+// GetAuditLogs получает аудит логи для пациента или клиники
+func (c *MedicalAccessContract) GetAuditLogs(
+	ctx contractapi.TransactionContextInterface,
+	patientID string,
+	clinicID string,
+) ([]*AuditLog, error) {
+	// В реальной реализации использовать CouchDB rich queries
+	// Для упрощения возвращаем пустой массив
+	return []*AuditLog{}, nil
+}
+
+// VerifyDataHash проверяет соответствие hash данных
+func (c *MedicalAccessContract) VerifyDataHash(
+	ctx contractapi.TransactionContextInterface,
+	transferID string,
+	providedHash string,
+) (bool, error) {
+	logJSON, err := ctx.GetStub().GetState(fmt.Sprintf("TRANSFER_%s", transferID))
+	if err != nil {
+		return false, fmt.Errorf("failed to read transfer log: %v", err)
+	}
+	if logJSON == nil {
+		return false, fmt.Errorf("transfer log %s does not exist", transferID)
+	}
+
+	var log DataTransferLog
+	err = json.Unmarshal(logJSON, &log)
+	if err != nil {
+		return false, err
+	}
+
+	return log.DataHash == providedHash, nil
 }
 
 func main() {

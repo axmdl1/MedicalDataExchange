@@ -38,22 +38,24 @@ type ApproveAccessRequestInput struct {
 }
 
 type ApproveAccessRequestResponse struct {
-	RequestID   int64  `json:"request_id"`
-	AccessToken string `json:"access_token"`
-	ExpiresAt   string `json:"expires_at"`
-	Status      string `json:"status"`
-	Message     string `json:"message"`
+	RequestID      int64  `json:"request_id"`
+	AccessToken    string `json:"access_token"`
+	ExpiresAt      string `json:"expires_at"`
+	Status         string `json:"status"`
+	Message        string `json:"message"`
+	BlockchainTxID string `json:"blockchain_tx_id,omitempty"`
 }
 
 type AccessRequestInfo struct {
-	ID            int64  `json:"id"`
-	PatientID     int64  `json:"patient_id"`
-	ClinicID      int64  `json:"clinic_id"`
-	MedicalDataID int64  `json:"medical_data_id"`
-	Status        string `json:"status"`
-	RequestedAt   string `json:"requested_at"`
-	ApprovedAt    string `json:"approved_at,omitempty"`
-	ExpiresAt     string `json:"expires_at,omitempty"`
+	ID             int64  `json:"id"`
+	PatientID      int64  `json:"patient_id"`
+	ClinicID       int64  `json:"clinic_id"`
+	MedicalDataID  int64  `json:"medical_data_id"`
+	Status         string `json:"status"`
+	RequestedAt    string `json:"requested_at"`
+	ApprovedAt     string `json:"approved_at,omitempty"`
+	ExpiresAt      string `json:"expires_at,omitempty"`
+	BlockchainTxID string `json:"blockchain_tx_id,omitempty"`
 }
 
 type MedicalDataResponse struct {
@@ -127,11 +129,12 @@ func (h *PatientAccessHandler) ApproveAccessRequest(w http.ResponseWriter, r *ht
 	}
 
 	response := ApproveAccessRequestResponse{
-		RequestID:   resp.Request.Id,
-		AccessToken: resp.TemporaryData.AccessToken,
-		ExpiresAt:   resp.TemporaryData.ExpiresAt,
-		Status:      resp.Request.Status,
-		Message:     "Доступ одобрен. Токен действителен 15 минут.",
+		RequestID:      resp.Request.Id,
+		AccessToken:    resp.TemporaryData.AccessToken,
+		ExpiresAt:      resp.TemporaryData.ExpiresAt,
+		Status:         resp.Request.Status,
+		Message:        "Доступ одобрен. Токен действителен 15 минут.",
+		BlockchainTxID: resp.Request.BlockchainTxId,
 	}
 
 	jsonpkg.WriteJSON(w, http.StatusOK, response)
@@ -210,14 +213,15 @@ func (h *PatientAccessHandler) ListAccessRequests(w http.ResponseWriter, r *http
 	requests := make([]AccessRequestInfo, len(resp.Requests))
 	for i, req := range resp.Requests {
 		requests[i] = AccessRequestInfo{
-			ID:            req.Id,
-			PatientID:     req.PatientId,
-			ClinicID:      req.ClinicId,
-			MedicalDataID: req.MedicalDataId,
-			Status:        req.Status,
-			RequestedAt:   req.RequestedAt,
-			ApprovedAt:    req.ApprovedAt,
-			ExpiresAt:     req.ExpiresAt,
+			ID:             req.Id,
+			PatientID:      req.PatientId,
+			ClinicID:       req.ClinicId,
+			MedicalDataID:  req.MedicalDataId,
+			Status:         req.Status,
+			RequestedAt:    req.RequestedAt,
+			ApprovedAt:     req.ApprovedAt,
+			ExpiresAt:      req.ExpiresAt,
+			BlockchainTxID: req.BlockchainTxId,
 		}
 	}
 

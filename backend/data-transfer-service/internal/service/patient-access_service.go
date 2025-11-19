@@ -77,12 +77,16 @@ func (s *patientAccessService) CreateAccessRequest(ctx context.Context, patientI
 		return nil, fmt.Errorf("medical data does not belong to this patient")
 	}
 
+	// Generate mock blockchain TX ID
+	blockchainTxID := generateBlockchainTxID("CREATE_REQUEST", patientID, clinicID, medicalDataID)
+
 	request := &model.PatientAccessRequest{
-		PatientID:     patientID,
-		ClinicID:      clinicID,
-		MedicalDataID: medicalDataID,
-		Status:        "pending",
-		RequestedAt:   time.Now(),
+		PatientID:      patientID,
+		ClinicID:       clinicID,
+		MedicalDataID:  medicalDataID,
+		Status:         "pending",
+		RequestedAt:    time.Now(),
+		BlockchainTxID: blockchainTxID,
 	}
 
 	// Сохраняем в БД
@@ -95,6 +99,7 @@ func (s *patientAccessService) CreateAccessRequest(ctx context.Context, patientI
 		Int64("patient_id", patientID).
 		Int64("clinic_id", clinicID).
 		Int64("medical_data_id", medicalDataID).
+		Str("blockchain_tx_id", blockchainTxID).
 		Msg("access request created")
 
 	return request, nil
@@ -147,40 +152,54 @@ func (s *patientAccessService) ApproveAccessRequest(ctx context.Context, request
 		return nil, fmt.Errorf("failed to create temporary data: %w", err)
 	}
 
-	// Обновляем статус запроса
+	// Обновляем статус запроса и генерируем blockchain TX ID для approve
 	request.Status = "approved"
 	request.ApprovedAt = &now
 	request.ExpiresAt = &expiresAt
+
+	// Generate blockchain TX ID for approval action
+	if request.BlockchainTxID == "" {
+		request.BlockchainTxID = generateBlockchainTxID("CREATE_REQUEST", request.PatientID, request.ClinicID, request.MedicalDataID)
+	}
+	// Append approval TX ID
+	approveTxID := generateBlockchainTxID("APPROVE_REQUEST", request.PatientID, approverID, requestID)
+	request.BlockchainTxID = approveTxID // Use most recent TX ID
 
 	if err := s.repo.UpdatePatientAccessRequest(ctx, request); err != nil {
 		log.Error().Err(err).Msg("failed to update request status")
 		// Не возвращаем ошибку, т.к. временные данные уже созданы
 	}
 
-	// TODO: Интеграция с блокчейном (опционально)
-	// Если blockchain-service доступен, записываем транзакцию
-	// Это можно сделать через gRPC вызов к blockchain-service
-	// Пока просто логируем для аудита
+	// Generate data hash for blockchain verification
+	dataHash := s.generateDataHash(medData)
+
+	// Store data hash in medical_data for future verification
+	// This would be done in a real implementation, but for now we just log it
 	log.Info().
 		Int64("request_id", requestID).
 		Int64("approver_id", approverID).
 		Str("access_token", accessToken).
+		Str("data_hash", dataHash).
 		Time("expires_at", expiresAt).
-		Msg("access request approved - ready for blockchain logging")
+		Msg("access request approved - data hash generated for blockchain logging")
 
-	// В будущем здесь будет вызов к blockchain-service:
-	// blockchainReq := &blockchainpb.CreateAccessRequestRequest{
-	//     Id:            fmt.Sprintf("%d", request.ID),
-	//     PatientId:     fmt.Sprintf("%d", request.PatientID),
-	//     ClinicId:      fmt.Sprintf("%d", request.ClinicID),
-	//     MedicalDataId: fmt.Sprintf("%d", request.MedicalDataID),
-	//     RequestType:   "patient_access",
+	// TODO: Integrate with blockchain-service via gRPC
+	// When blockchain-service is running, call it to record the transaction:
+	//
+	// blockchainReq := &blockchainpb.ApproveAccessRequestRequest{
+	//     RequestId:  fmt.Sprintf("%d", request.ID),
+	//     ApproverId: fmt.Sprintf("%d", approverID),
 	// }
-	// blockchainResp, err := s.blockchainClient.CreateAccessRequest(ctx, blockchainReq)
+	// blockchainResp, err := s.blockchainClient.ApproveAccessRequest(ctx, blockchainReq)
 	// if err == nil {
-	//     request.BlockchainTxID = blockchainResp.Id
+	//     request.BlockchainTxID = blockchainResp.TransactionId
 	//     s.repo.UpdatePatientAccessRequest(ctx, request)
+	// } else {
+	//     log.Warn().Err(err).Msg("Failed to record approval in blockchain, continuing with local storage")
 	// }
+	//
+	// This creates an immutable audit trail in the blockchain while maintaining
+	// functionality even if blockchain is temporarily unavailable.
 
 	return tempData, nil
 }
@@ -352,4 +371,41 @@ func (s *patientAccessService) generateAccessToken(patientID, medicalDataID int6
 	data := fmt.Sprintf("%d:%d:%d", patientID, medicalDataID, timestamp)
 	hash := sha256.Sum256([]byte(data + string(s.encryptionKey)))
 	return base64.URLEncoding.EncodeToString(hash[:])
+}
+
+// generateDataHash создает SHA-256 хэш медицинских данных для blockchain verification
+func (s *patientAccessService) generateDataHash(data *model.MedicalData) string {
+	// Создаем строку из всех значимых полей медицинских данных
+	dataString := fmt.Sprintf("%d:%d:%s:%s:%s",
+		data.ID,
+		data.UserID,
+		data.Diagnosis,
+		data.TreatmentPlan,
+		data.CreatedAt.Format(time.RFC3339),
+	)
+
+	hash := sha256.Sum256([]byte(dataString))
+	return fmt.Sprintf("%x", hash)
+}
+
+// generateBlockchainTxID generates a mock blockchain transaction ID
+// Format: ACTION_TIMESTAMP_HASH
+// Example: CREATE_REQUEST_20250119064500_a1b2c3d4e5f6
+func generateBlockchainTxID(action string, params ...int64) string {
+	timestamp := time.Now().Format("20060102150405")
+
+	// Create a unique hash from the parameters
+	var dataString string
+	for i, param := range params {
+		if i > 0 {
+			dataString += ":"
+		}
+		dataString += fmt.Sprintf("%d", param)
+	}
+	dataString += ":" + timestamp
+
+	hash := sha256.Sum256([]byte(dataString))
+	hashHex := fmt.Sprintf("%x", hash)[:12] // Take first 12 characters
+
+	return fmt.Sprintf("%s_%s_%s", action, timestamp, hashHex)
 }

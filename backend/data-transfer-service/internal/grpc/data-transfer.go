@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"time"
 
@@ -346,7 +347,7 @@ func (s *serverAPI) ListPatientAccessRequests(ctx context.Context, req *dtpb.Lis
 	userRole, _ := GetUserRole(ctx)
 
 	var patientID, clinicID *int64
-	var status *string
+	var reqStatus *string
 
 	// Для пациента принудительно фильтруем по его ID
 	if userRole == "patient" {
@@ -363,10 +364,10 @@ func (s *serverAPI) ListPatientAccessRequests(ctx context.Context, req *dtpb.Lis
 		clinicID = req.ClinicId
 	}
 	if req.Status != nil {
-		status = req.Status
+		reqStatus = req.Status
 	}
 
-	requests, err := s.patientAccessService.ListPatientAccessRequests(ctx, patientID, clinicID, status)
+	requests, err := s.patientAccessService.ListPatientAccessRequests(ctx, patientID, clinicID, reqStatus)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to list access requests: %v", err)
 	}
@@ -459,13 +460,20 @@ func convertMedicalDataToProto(med *model.MedicalData) *dtpb.MedicalData {
 		UserId:      med.UserID,
 		ClinicId:    med.ClinicID,
 		Diagnosis:   med.Diagnosis,
-		Complaint:   med.Complaint,
-		Treatment:   med.Treatment,
-		Medications: med.Medications,
-		Allergies:   med.Allergies,
-		DoctorNotes: med.DoctorNotes,
-		LabResults:  med.LabResults,
+		Complaint:   nullStringToString(med.ChiefComplaint),
+		Treatment:   med.TreatmentPlan,
+		Medications: nullStringToString(med.PrescribedMedications),
+		Allergies:   nullStringToString(med.Allergies),
+		DoctorNotes: nullStringToString(med.DoctorNotes),
+		LabResults:  nullStringToString(med.LabResultsSummary),
 		CreatedAt:   med.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   med.UpdatedAt.Format(time.RFC3339),
 	}
+}
+
+func nullStringToString(ns sql.NullString) string {
+	if ns.Valid {
+		return ns.String
+	}
+	return ""
 }

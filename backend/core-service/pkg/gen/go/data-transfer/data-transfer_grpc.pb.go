@@ -19,19 +19,26 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DataTransferService_CreateMedicalData_FullMethodName          = "/datatransfer.v1.DataTransferService/CreateMedicalData"
-	DataTransferService_GetMedicalData_FullMethodName             = "/datatransfer.v1.DataTransferService/GetMedicalData"
-	DataTransferService_DeleteMedicalData_FullMethodName          = "/datatransfer.v1.DataTransferService/DeleteMedicalData"
-	DataTransferService_ListMedicalData_FullMethodName            = "/datatransfer.v1.DataTransferService/ListMedicalData"
-	DataTransferService_CreateDataTransfer_FullMethodName         = "/datatransfer.v1.DataTransferService/CreateDataTransfer"
-	DataTransferService_GetDataTransfer_FullMethodName            = "/datatransfer.v1.DataTransferService/GetDataTransfer"
-	DataTransferService_ListDataTransfers_FullMethodName          = "/datatransfer.v1.DataTransferService/ListDataTransfers"
-	DataTransferService_HandleDataTransferDecision_FullMethodName = "/datatransfer.v1.DataTransferService/HandleDataTransferDecision"
-	DataTransferService_CreateClinic_FullMethodName               = "/datatransfer.v1.DataTransferService/CreateClinic"
-	DataTransferService_GetClinic_FullMethodName                  = "/datatransfer.v1.DataTransferService/GetClinic"
-	DataTransferService_UpdateClinic_FullMethodName               = "/datatransfer.v1.DataTransferService/UpdateClinic"
-	DataTransferService_DeleteClinic_FullMethodName               = "/datatransfer.v1.DataTransferService/DeleteClinic"
-	DataTransferService_ListClinics_FullMethodName                = "/datatransfer.v1.DataTransferService/ListClinics"
+	DataTransferService_CreateMedicalData_FullMethodName           = "/datatransfer.v1.DataTransferService/CreateMedicalData"
+	DataTransferService_GetMedicalData_FullMethodName              = "/datatransfer.v1.DataTransferService/GetMedicalData"
+	DataTransferService_DeleteMedicalData_FullMethodName           = "/datatransfer.v1.DataTransferService/DeleteMedicalData"
+	DataTransferService_ListMedicalData_FullMethodName             = "/datatransfer.v1.DataTransferService/ListMedicalData"
+	DataTransferService_CreateDataTransfer_FullMethodName          = "/datatransfer.v1.DataTransferService/CreateDataTransfer"
+	DataTransferService_GetDataTransfer_FullMethodName             = "/datatransfer.v1.DataTransferService/GetDataTransfer"
+	DataTransferService_ListDataTransfers_FullMethodName           = "/datatransfer.v1.DataTransferService/ListDataTransfers"
+	DataTransferService_HandleDataTransferDecision_FullMethodName  = "/datatransfer.v1.DataTransferService/HandleDataTransferDecision"
+	DataTransferService_CreateClinic_FullMethodName                = "/datatransfer.v1.DataTransferService/CreateClinic"
+	DataTransferService_GetClinic_FullMethodName                   = "/datatransfer.v1.DataTransferService/GetClinic"
+	DataTransferService_UpdateClinic_FullMethodName                = "/datatransfer.v1.DataTransferService/UpdateClinic"
+	DataTransferService_DeleteClinic_FullMethodName                = "/datatransfer.v1.DataTransferService/DeleteClinic"
+	DataTransferService_ListClinics_FullMethodName                 = "/datatransfer.v1.DataTransferService/ListClinics"
+	DataTransferService_CreatePatientAccessRequest_FullMethodName  = "/datatransfer.v1.DataTransferService/CreatePatientAccessRequest"
+	DataTransferService_ApprovePatientAccessRequest_FullMethodName = "/datatransfer.v1.DataTransferService/ApprovePatientAccessRequest"
+	DataTransferService_RejectPatientAccessRequest_FullMethodName  = "/datatransfer.v1.DataTransferService/RejectPatientAccessRequest"
+	DataTransferService_GetPatientAccessRequest_FullMethodName     = "/datatransfer.v1.DataTransferService/GetPatientAccessRequest"
+	DataTransferService_ListPatientAccessRequests_FullMethodName   = "/datatransfer.v1.DataTransferService/ListPatientAccessRequests"
+	DataTransferService_GetTemporaryPatientData_FullMethodName     = "/datatransfer.v1.DataTransferService/GetTemporaryPatientData"
+	DataTransferService_RevokePatientAccess_FullMethodName         = "/datatransfer.v1.DataTransferService/RevokePatientAccess"
 )
 
 // DataTransferServiceClient is the client API for DataTransferService service.
@@ -55,6 +62,14 @@ type DataTransferServiceClient interface {
 	UpdateClinic(ctx context.Context, in *UpdateClinicRequest, opts ...grpc.CallOption) (*UpdateClinicResponse, error)
 	DeleteClinic(ctx context.Context, in *DeleteClinicRequest, opts ...grpc.CallOption) (*DeleteClinicResponse, error)
 	ListClinics(ctx context.Context, in *ListClinicsRequest, opts ...grpc.CallOption) (*ListClinicsResponse, error)
+	// --- Patient Access ---
+	CreatePatientAccessRequest(ctx context.Context, in *CreatePatientAccessRequestRequest, opts ...grpc.CallOption) (*CreatePatientAccessRequestResponse, error)
+	ApprovePatientAccessRequest(ctx context.Context, in *ApprovePatientAccessRequestRequest, opts ...grpc.CallOption) (*ApprovePatientAccessRequestResponse, error)
+	RejectPatientAccessRequest(ctx context.Context, in *RejectPatientAccessRequestRequest, opts ...grpc.CallOption) (*RejectPatientAccessRequestResponse, error)
+	GetPatientAccessRequest(ctx context.Context, in *GetPatientAccessRequestRequest, opts ...grpc.CallOption) (*GetPatientAccessRequestResponse, error)
+	ListPatientAccessRequests(ctx context.Context, in *ListPatientAccessRequestsRequest, opts ...grpc.CallOption) (*ListPatientAccessRequestsResponse, error)
+	GetTemporaryPatientData(ctx context.Context, in *GetTemporaryPatientDataRequest, opts ...grpc.CallOption) (*GetTemporaryPatientDataResponse, error)
+	RevokePatientAccess(ctx context.Context, in *RevokePatientAccessRequest, opts ...grpc.CallOption) (*RevokePatientAccessResponse, error)
 }
 
 type dataTransferServiceClient struct {
@@ -195,6 +210,76 @@ func (c *dataTransferServiceClient) ListClinics(ctx context.Context, in *ListCli
 	return out, nil
 }
 
+func (c *dataTransferServiceClient) CreatePatientAccessRequest(ctx context.Context, in *CreatePatientAccessRequestRequest, opts ...grpc.CallOption) (*CreatePatientAccessRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePatientAccessRequestResponse)
+	err := c.cc.Invoke(ctx, DataTransferService_CreatePatientAccessRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dataTransferServiceClient) ApprovePatientAccessRequest(ctx context.Context, in *ApprovePatientAccessRequestRequest, opts ...grpc.CallOption) (*ApprovePatientAccessRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApprovePatientAccessRequestResponse)
+	err := c.cc.Invoke(ctx, DataTransferService_ApprovePatientAccessRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dataTransferServiceClient) RejectPatientAccessRequest(ctx context.Context, in *RejectPatientAccessRequestRequest, opts ...grpc.CallOption) (*RejectPatientAccessRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RejectPatientAccessRequestResponse)
+	err := c.cc.Invoke(ctx, DataTransferService_RejectPatientAccessRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dataTransferServiceClient) GetPatientAccessRequest(ctx context.Context, in *GetPatientAccessRequestRequest, opts ...grpc.CallOption) (*GetPatientAccessRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPatientAccessRequestResponse)
+	err := c.cc.Invoke(ctx, DataTransferService_GetPatientAccessRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dataTransferServiceClient) ListPatientAccessRequests(ctx context.Context, in *ListPatientAccessRequestsRequest, opts ...grpc.CallOption) (*ListPatientAccessRequestsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPatientAccessRequestsResponse)
+	err := c.cc.Invoke(ctx, DataTransferService_ListPatientAccessRequests_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dataTransferServiceClient) GetTemporaryPatientData(ctx context.Context, in *GetTemporaryPatientDataRequest, opts ...grpc.CallOption) (*GetTemporaryPatientDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTemporaryPatientDataResponse)
+	err := c.cc.Invoke(ctx, DataTransferService_GetTemporaryPatientData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dataTransferServiceClient) RevokePatientAccess(ctx context.Context, in *RevokePatientAccessRequest, opts ...grpc.CallOption) (*RevokePatientAccessResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokePatientAccessResponse)
+	err := c.cc.Invoke(ctx, DataTransferService_RevokePatientAccess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DataTransferServiceServer is the server API for DataTransferService service.
 // All implementations must embed UnimplementedDataTransferServiceServer
 // for forward compatibility.
@@ -216,6 +301,14 @@ type DataTransferServiceServer interface {
 	UpdateClinic(context.Context, *UpdateClinicRequest) (*UpdateClinicResponse, error)
 	DeleteClinic(context.Context, *DeleteClinicRequest) (*DeleteClinicResponse, error)
 	ListClinics(context.Context, *ListClinicsRequest) (*ListClinicsResponse, error)
+	// --- Patient Access ---
+	CreatePatientAccessRequest(context.Context, *CreatePatientAccessRequestRequest) (*CreatePatientAccessRequestResponse, error)
+	ApprovePatientAccessRequest(context.Context, *ApprovePatientAccessRequestRequest) (*ApprovePatientAccessRequestResponse, error)
+	RejectPatientAccessRequest(context.Context, *RejectPatientAccessRequestRequest) (*RejectPatientAccessRequestResponse, error)
+	GetPatientAccessRequest(context.Context, *GetPatientAccessRequestRequest) (*GetPatientAccessRequestResponse, error)
+	ListPatientAccessRequests(context.Context, *ListPatientAccessRequestsRequest) (*ListPatientAccessRequestsResponse, error)
+	GetTemporaryPatientData(context.Context, *GetTemporaryPatientDataRequest) (*GetTemporaryPatientDataResponse, error)
+	RevokePatientAccess(context.Context, *RevokePatientAccessRequest) (*RevokePatientAccessResponse, error)
 	mustEmbedUnimplementedDataTransferServiceServer()
 }
 
@@ -264,6 +357,27 @@ func (UnimplementedDataTransferServiceServer) DeleteClinic(context.Context, *Del
 }
 func (UnimplementedDataTransferServiceServer) ListClinics(context.Context, *ListClinicsRequest) (*ListClinicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListClinics not implemented")
+}
+func (UnimplementedDataTransferServiceServer) CreatePatientAccessRequest(context.Context, *CreatePatientAccessRequestRequest) (*CreatePatientAccessRequestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePatientAccessRequest not implemented")
+}
+func (UnimplementedDataTransferServiceServer) ApprovePatientAccessRequest(context.Context, *ApprovePatientAccessRequestRequest) (*ApprovePatientAccessRequestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApprovePatientAccessRequest not implemented")
+}
+func (UnimplementedDataTransferServiceServer) RejectPatientAccessRequest(context.Context, *RejectPatientAccessRequestRequest) (*RejectPatientAccessRequestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RejectPatientAccessRequest not implemented")
+}
+func (UnimplementedDataTransferServiceServer) GetPatientAccessRequest(context.Context, *GetPatientAccessRequestRequest) (*GetPatientAccessRequestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPatientAccessRequest not implemented")
+}
+func (UnimplementedDataTransferServiceServer) ListPatientAccessRequests(context.Context, *ListPatientAccessRequestsRequest) (*ListPatientAccessRequestsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPatientAccessRequests not implemented")
+}
+func (UnimplementedDataTransferServiceServer) GetTemporaryPatientData(context.Context, *GetTemporaryPatientDataRequest) (*GetTemporaryPatientDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTemporaryPatientData not implemented")
+}
+func (UnimplementedDataTransferServiceServer) RevokePatientAccess(context.Context, *RevokePatientAccessRequest) (*RevokePatientAccessResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RevokePatientAccess not implemented")
 }
 func (UnimplementedDataTransferServiceServer) mustEmbedUnimplementedDataTransferServiceServer() {}
 func (UnimplementedDataTransferServiceServer) testEmbeddedByValue()                             {}
@@ -520,6 +634,132 @@ func _DataTransferService_ListClinics_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DataTransferService_CreatePatientAccessRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePatientAccessRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataTransferServiceServer).CreatePatientAccessRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataTransferService_CreatePatientAccessRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataTransferServiceServer).CreatePatientAccessRequest(ctx, req.(*CreatePatientAccessRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DataTransferService_ApprovePatientAccessRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApprovePatientAccessRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataTransferServiceServer).ApprovePatientAccessRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataTransferService_ApprovePatientAccessRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataTransferServiceServer).ApprovePatientAccessRequest(ctx, req.(*ApprovePatientAccessRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DataTransferService_RejectPatientAccessRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RejectPatientAccessRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataTransferServiceServer).RejectPatientAccessRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataTransferService_RejectPatientAccessRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataTransferServiceServer).RejectPatientAccessRequest(ctx, req.(*RejectPatientAccessRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DataTransferService_GetPatientAccessRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPatientAccessRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataTransferServiceServer).GetPatientAccessRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataTransferService_GetPatientAccessRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataTransferServiceServer).GetPatientAccessRequest(ctx, req.(*GetPatientAccessRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DataTransferService_ListPatientAccessRequests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPatientAccessRequestsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataTransferServiceServer).ListPatientAccessRequests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataTransferService_ListPatientAccessRequests_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataTransferServiceServer).ListPatientAccessRequests(ctx, req.(*ListPatientAccessRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DataTransferService_GetTemporaryPatientData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTemporaryPatientDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataTransferServiceServer).GetTemporaryPatientData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataTransferService_GetTemporaryPatientData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataTransferServiceServer).GetTemporaryPatientData(ctx, req.(*GetTemporaryPatientDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DataTransferService_RevokePatientAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokePatientAccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataTransferServiceServer).RevokePatientAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataTransferService_RevokePatientAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataTransferServiceServer).RevokePatientAccess(ctx, req.(*RevokePatientAccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DataTransferService_ServiceDesc is the grpc.ServiceDesc for DataTransferService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -578,6 +818,34 @@ var DataTransferService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListClinics",
 			Handler:    _DataTransferService_ListClinics_Handler,
+		},
+		{
+			MethodName: "CreatePatientAccessRequest",
+			Handler:    _DataTransferService_CreatePatientAccessRequest_Handler,
+		},
+		{
+			MethodName: "ApprovePatientAccessRequest",
+			Handler:    _DataTransferService_ApprovePatientAccessRequest_Handler,
+		},
+		{
+			MethodName: "RejectPatientAccessRequest",
+			Handler:    _DataTransferService_RejectPatientAccessRequest_Handler,
+		},
+		{
+			MethodName: "GetPatientAccessRequest",
+			Handler:    _DataTransferService_GetPatientAccessRequest_Handler,
+		},
+		{
+			MethodName: "ListPatientAccessRequests",
+			Handler:    _DataTransferService_ListPatientAccessRequests_Handler,
+		},
+		{
+			MethodName: "GetTemporaryPatientData",
+			Handler:    _DataTransferService_GetTemporaryPatientData_Handler,
+		},
+		{
+			MethodName: "RevokePatientAccess",
+			Handler:    _DataTransferService_RevokePatientAccess_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

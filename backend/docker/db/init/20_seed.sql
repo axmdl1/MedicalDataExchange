@@ -153,7 +153,7 @@ BEGIN
 
     -- Медицинские записи для пациента 1 (City Clinic)
     IF NOT EXISTS (SELECT 1 FROM medical_data WHERE user_id = _patient1_id AND clinic_id = 1) THEN
-        INSERT INTO medical_data (user_id, clinic_id, diagnosis, complaint, treatment, medications, allergies, doctor_notes, lab_results, created_at)
+        INSERT INTO medical_data (user_id, clinic_id, diagnosis, chief_complaint, treatment_plan, prescribed_medications, allergies, doctor_notes, lab_results_summary, visit_date)
         VALUES
             (_patient1_id, 1, 'ОРВИ', 'Высокая температура 38.5, слабость, головная боль', 'Постельный режим, обильное питье', 'Парацетамол 500мг 3 раза в день', 'Нет', 'Повторный осмотр через 5 дней', 'Общий анализ крови: в норме', NOW() - INTERVAL '10 days'),
             (_patient1_id, 1, 'Профилактический осмотр', 'Плановый осмотр', 'Не требуется', 'Витамин D', 'Нет', 'Здорова, рекомендован активный образ жизни', 'Анализы в норме', NOW() - INTERVAL '30 days');
@@ -161,7 +161,7 @@ BEGIN
 
     -- Медицинские записи для пациента 2 (Regional Hospital)
     IF NOT EXISTS (SELECT 1 FROM medical_data WHERE user_id = _patient2_id AND clinic_id = 2) THEN
-        INSERT INTO medical_data (user_id, clinic_id, diagnosis, complaint, treatment, medications, allergies, doctor_notes, lab_results, created_at)
+        INSERT INTO medical_data (user_id, clinic_id, diagnosis, chief_complaint, treatment_plan, prescribed_medications, allergies, doctor_notes, lab_results_summary, visit_date)
         VALUES
             (_patient2_id, 2, 'Гастрит', 'Боли в желудке, изжога', 'Диета, исключить острое и жареное', 'Омепразол 20мг утром натощак', 'Аспирин', 'Контроль через 2 недели, возможна ФГДС', 'Биохимия крови: в норме', NOW() - INTERVAL '5 days'),
             (_patient2_id, 2, 'Артериальная гипертензия', 'Повышенное давление 150/95', 'Контроль давления, снижение соли', 'Эналаприл 10мг утром', 'Нет', 'Вести дневник давления', 'ЭКГ: без патологии', NOW() - INTERVAL '15 days');
@@ -169,7 +169,7 @@ BEGIN
 
     -- Медицинские записи для пациента 3 (Medical Center Plus)
     IF NOT EXISTS (SELECT 1 FROM medical_data WHERE user_id = _patient3_id AND clinic_id = 3) THEN
-        INSERT INTO medical_data (user_id, clinic_id, diagnosis, complaint, treatment, medications, allergies, doctor_notes, lab_results, created_at)
+        INSERT INTO medical_data (user_id, clinic_id, diagnosis, chief_complaint, treatment_plan, prescribed_medications, allergies, doctor_notes, lab_results_summary, visit_date)
         VALUES
             (_patient3_id, 3, 'Аллергический ринит', 'Заложенность носа, чихание, слезотечение', 'Избегать контакта с аллергенами', 'Цетиризин 10мг на ночь', 'Пыльца березы', 'Рекомендована консультация аллерголога', 'Общий IgE повышен', NOW() - INTERVAL '3 days');
     END IF;

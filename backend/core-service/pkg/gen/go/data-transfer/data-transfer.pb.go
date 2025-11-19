@@ -1545,6 +1545,878 @@ func (x *ListClinicsResponse) GetClinics() []*Clinic {
 	return nil
 }
 
+type PatientAccessRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	PatientId      int64                  `protobuf:"varint,2,opt,name=patient_id,json=patientId,proto3" json:"patient_id,omitempty"`
+	ClinicId       int64                  `protobuf:"varint,3,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
+	MedicalDataId  int64                  `protobuf:"varint,4,opt,name=medical_data_id,json=medicalDataId,proto3" json:"medical_data_id,omitempty"`
+	Status         string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"` // pending, approved, rejected, expired
+	BlockchainTxId string                 `protobuf:"bytes,6,opt,name=blockchain_tx_id,json=blockchainTxId,proto3" json:"blockchain_tx_id,omitempty"`
+	RequestedAt    string                 `protobuf:"bytes,7,opt,name=requested_at,json=requestedAt,proto3" json:"requested_at,omitempty"`
+	ApprovedAt     string                 `protobuf:"bytes,8,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
+	ExpiresAt      string                 `protobuf:"bytes,9,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PatientAccessRequest) Reset() {
+	*x = PatientAccessRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PatientAccessRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PatientAccessRequest) ProtoMessage() {}
+
+func (x *PatientAccessRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PatientAccessRequest.ProtoReflect.Descriptor instead.
+func (*PatientAccessRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *PatientAccessRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *PatientAccessRequest) GetPatientId() int64 {
+	if x != nil {
+		return x.PatientId
+	}
+	return 0
+}
+
+func (x *PatientAccessRequest) GetClinicId() int64 {
+	if x != nil {
+		return x.ClinicId
+	}
+	return 0
+}
+
+func (x *PatientAccessRequest) GetMedicalDataId() int64 {
+	if x != nil {
+		return x.MedicalDataId
+	}
+	return 0
+}
+
+func (x *PatientAccessRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *PatientAccessRequest) GetBlockchainTxId() string {
+	if x != nil {
+		return x.BlockchainTxId
+	}
+	return ""
+}
+
+func (x *PatientAccessRequest) GetRequestedAt() string {
+	if x != nil {
+		return x.RequestedAt
+	}
+	return ""
+}
+
+func (x *PatientAccessRequest) GetApprovedAt() string {
+	if x != nil {
+		return x.ApprovedAt
+	}
+	return ""
+}
+
+func (x *PatientAccessRequest) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+type TemporaryPatientData struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccessToken   string                 `protobuf:"bytes,2,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	PatientId     int64                  `protobuf:"varint,3,opt,name=patient_id,json=patientId,proto3" json:"patient_id,omitempty"`
+	ClinicId      int64                  `protobuf:"varint,4,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
+	MedicalDataId int64                  `protobuf:"varint,5,opt,name=medical_data_id,json=medicalDataId,proto3" json:"medical_data_id,omitempty"`
+	GrantedAt     string                 `protobuf:"bytes,6,opt,name=granted_at,json=grantedAt,proto3" json:"granted_at,omitempty"`
+	ExpiresAt     string                 `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	IsRevoked     bool                   `protobuf:"varint,8,opt,name=is_revoked,json=isRevoked,proto3" json:"is_revoked,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TemporaryPatientData) Reset() {
+	*x = TemporaryPatientData{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TemporaryPatientData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TemporaryPatientData) ProtoMessage() {}
+
+func (x *TemporaryPatientData) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TemporaryPatientData.ProtoReflect.Descriptor instead.
+func (*TemporaryPatientData) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *TemporaryPatientData) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *TemporaryPatientData) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *TemporaryPatientData) GetPatientId() int64 {
+	if x != nil {
+		return x.PatientId
+	}
+	return 0
+}
+
+func (x *TemporaryPatientData) GetClinicId() int64 {
+	if x != nil {
+		return x.ClinicId
+	}
+	return 0
+}
+
+func (x *TemporaryPatientData) GetMedicalDataId() int64 {
+	if x != nil {
+		return x.MedicalDataId
+	}
+	return 0
+}
+
+func (x *TemporaryPatientData) GetGrantedAt() string {
+	if x != nil {
+		return x.GrantedAt
+	}
+	return ""
+}
+
+func (x *TemporaryPatientData) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *TemporaryPatientData) GetIsRevoked() bool {
+	if x != nil {
+		return x.IsRevoked
+	}
+	return false
+}
+
+type CreatePatientAccessRequestRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PatientId     int64                  `protobuf:"varint,1,opt,name=patient_id,json=patientId,proto3" json:"patient_id,omitempty"`
+	ClinicId      int64                  `protobuf:"varint,2,opt,name=clinic_id,json=clinicId,proto3" json:"clinic_id,omitempty"`
+	MedicalDataId int64                  `protobuf:"varint,3,opt,name=medical_data_id,json=medicalDataId,proto3" json:"medical_data_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePatientAccessRequestRequest) Reset() {
+	*x = CreatePatientAccessRequestRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePatientAccessRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePatientAccessRequestRequest) ProtoMessage() {}
+
+func (x *CreatePatientAccessRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePatientAccessRequestRequest.ProtoReflect.Descriptor instead.
+func (*CreatePatientAccessRequestRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *CreatePatientAccessRequestRequest) GetPatientId() int64 {
+	if x != nil {
+		return x.PatientId
+	}
+	return 0
+}
+
+func (x *CreatePatientAccessRequestRequest) GetClinicId() int64 {
+	if x != nil {
+		return x.ClinicId
+	}
+	return 0
+}
+
+func (x *CreatePatientAccessRequestRequest) GetMedicalDataId() int64 {
+	if x != nil {
+		return x.MedicalDataId
+	}
+	return 0
+}
+
+type CreatePatientAccessRequestResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Request       *PatientAccessRequest  `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePatientAccessRequestResponse) Reset() {
+	*x = CreatePatientAccessRequestResponse{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePatientAccessRequestResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePatientAccessRequestResponse) ProtoMessage() {}
+
+func (x *CreatePatientAccessRequestResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePatientAccessRequestResponse.ProtoReflect.Descriptor instead.
+func (*CreatePatientAccessRequestResponse) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *CreatePatientAccessRequestResponse) GetRequest() *PatientAccessRequest {
+	if x != nil {
+		return x.Request
+	}
+	return nil
+}
+
+type ApprovePatientAccessRequestRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     int64                  `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	ApproverId    int64                  `protobuf:"varint,2,opt,name=approver_id,json=approverId,proto3" json:"approver_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApprovePatientAccessRequestRequest) Reset() {
+	*x = ApprovePatientAccessRequestRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApprovePatientAccessRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApprovePatientAccessRequestRequest) ProtoMessage() {}
+
+func (x *ApprovePatientAccessRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApprovePatientAccessRequestRequest.ProtoReflect.Descriptor instead.
+func (*ApprovePatientAccessRequestRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *ApprovePatientAccessRequestRequest) GetRequestId() int64 {
+	if x != nil {
+		return x.RequestId
+	}
+	return 0
+}
+
+func (x *ApprovePatientAccessRequestRequest) GetApproverId() int64 {
+	if x != nil {
+		return x.ApproverId
+	}
+	return 0
+}
+
+type ApprovePatientAccessRequestResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Request       *PatientAccessRequest  `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	TemporaryData *TemporaryPatientData  `protobuf:"bytes,2,opt,name=temporary_data,json=temporaryData,proto3" json:"temporary_data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApprovePatientAccessRequestResponse) Reset() {
+	*x = ApprovePatientAccessRequestResponse{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApprovePatientAccessRequestResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApprovePatientAccessRequestResponse) ProtoMessage() {}
+
+func (x *ApprovePatientAccessRequestResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApprovePatientAccessRequestResponse.ProtoReflect.Descriptor instead.
+func (*ApprovePatientAccessRequestResponse) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *ApprovePatientAccessRequestResponse) GetRequest() *PatientAccessRequest {
+	if x != nil {
+		return x.Request
+	}
+	return nil
+}
+
+func (x *ApprovePatientAccessRequestResponse) GetTemporaryData() *TemporaryPatientData {
+	if x != nil {
+		return x.TemporaryData
+	}
+	return nil
+}
+
+type RejectPatientAccessRequestRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     int64                  `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RejectPatientAccessRequestRequest) Reset() {
+	*x = RejectPatientAccessRequestRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RejectPatientAccessRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectPatientAccessRequestRequest) ProtoMessage() {}
+
+func (x *RejectPatientAccessRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectPatientAccessRequestRequest.ProtoReflect.Descriptor instead.
+func (*RejectPatientAccessRequestRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *RejectPatientAccessRequestRequest) GetRequestId() int64 {
+	if x != nil {
+		return x.RequestId
+	}
+	return 0
+}
+
+type RejectPatientAccessRequestResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Request       *PatientAccessRequest  `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RejectPatientAccessRequestResponse) Reset() {
+	*x = RejectPatientAccessRequestResponse{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RejectPatientAccessRequestResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectPatientAccessRequestResponse) ProtoMessage() {}
+
+func (x *RejectPatientAccessRequestResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectPatientAccessRequestResponse.ProtoReflect.Descriptor instead.
+func (*RejectPatientAccessRequestResponse) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *RejectPatientAccessRequestResponse) GetRequest() *PatientAccessRequest {
+	if x != nil {
+		return x.Request
+	}
+	return nil
+}
+
+type GetPatientAccessRequestRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     int64                  `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPatientAccessRequestRequest) Reset() {
+	*x = GetPatientAccessRequestRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPatientAccessRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPatientAccessRequestRequest) ProtoMessage() {}
+
+func (x *GetPatientAccessRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPatientAccessRequestRequest.ProtoReflect.Descriptor instead.
+func (*GetPatientAccessRequestRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *GetPatientAccessRequestRequest) GetRequestId() int64 {
+	if x != nil {
+		return x.RequestId
+	}
+	return 0
+}
+
+type GetPatientAccessRequestResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Request       *PatientAccessRequest  `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPatientAccessRequestResponse) Reset() {
+	*x = GetPatientAccessRequestResponse{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPatientAccessRequestResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPatientAccessRequestResponse) ProtoMessage() {}
+
+func (x *GetPatientAccessRequestResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPatientAccessRequestResponse.ProtoReflect.Descriptor instead.
+func (*GetPatientAccessRequestResponse) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GetPatientAccessRequestResponse) GetRequest() *PatientAccessRequest {
+	if x != nil {
+		return x.Request
+	}
+	return nil
+}
+
+type ListPatientAccessRequestsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PatientId     *int64                 `protobuf:"varint,1,opt,name=patient_id,json=patientId,proto3,oneof" json:"patient_id,omitempty"`
+	ClinicId      *int64                 `protobuf:"varint,2,opt,name=clinic_id,json=clinicId,proto3,oneof" json:"clinic_id,omitempty"`
+	Status        *string                `protobuf:"bytes,3,opt,name=status,proto3,oneof" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPatientAccessRequestsRequest) Reset() {
+	*x = ListPatientAccessRequestsRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPatientAccessRequestsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPatientAccessRequestsRequest) ProtoMessage() {}
+
+func (x *ListPatientAccessRequestsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPatientAccessRequestsRequest.ProtoReflect.Descriptor instead.
+func (*ListPatientAccessRequestsRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *ListPatientAccessRequestsRequest) GetPatientId() int64 {
+	if x != nil && x.PatientId != nil {
+		return *x.PatientId
+	}
+	return 0
+}
+
+func (x *ListPatientAccessRequestsRequest) GetClinicId() int64 {
+	if x != nil && x.ClinicId != nil {
+		return *x.ClinicId
+	}
+	return 0
+}
+
+func (x *ListPatientAccessRequestsRequest) GetStatus() string {
+	if x != nil && x.Status != nil {
+		return *x.Status
+	}
+	return ""
+}
+
+type ListPatientAccessRequestsResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Requests      []*PatientAccessRequest `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPatientAccessRequestsResponse) Reset() {
+	*x = ListPatientAccessRequestsResponse{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPatientAccessRequestsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPatientAccessRequestsResponse) ProtoMessage() {}
+
+func (x *ListPatientAccessRequestsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPatientAccessRequestsResponse.ProtoReflect.Descriptor instead.
+func (*ListPatientAccessRequestsResponse) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *ListPatientAccessRequestsResponse) GetRequests() []*PatientAccessRequest {
+	if x != nil {
+		return x.Requests
+	}
+	return nil
+}
+
+type GetTemporaryPatientDataRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTemporaryPatientDataRequest) Reset() {
+	*x = GetTemporaryPatientDataRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTemporaryPatientDataRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTemporaryPatientDataRequest) ProtoMessage() {}
+
+func (x *GetTemporaryPatientDataRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTemporaryPatientDataRequest.ProtoReflect.Descriptor instead.
+func (*GetTemporaryPatientDataRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *GetTemporaryPatientDataRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+type GetTemporaryPatientDataResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MedicalData   *MedicalData           `protobuf:"bytes,1,opt,name=medical_data,json=medicalData,proto3" json:"medical_data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTemporaryPatientDataResponse) Reset() {
+	*x = GetTemporaryPatientDataResponse{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTemporaryPatientDataResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTemporaryPatientDataResponse) ProtoMessage() {}
+
+func (x *GetTemporaryPatientDataResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTemporaryPatientDataResponse.ProtoReflect.Descriptor instead.
+func (*GetTemporaryPatientDataResponse) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *GetTemporaryPatientDataResponse) GetMedicalData() *MedicalData {
+	if x != nil {
+		return x.MedicalData
+	}
+	return nil
+}
+
+type RevokePatientAccessRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokePatientAccessRequest) Reset() {
+	*x = RevokePatientAccessRequest{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokePatientAccessRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokePatientAccessRequest) ProtoMessage() {}
+
+func (x *RevokePatientAccessRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokePatientAccessRequest.ProtoReflect.Descriptor instead.
+func (*RevokePatientAccessRequest) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *RevokePatientAccessRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+type RevokePatientAccessResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokePatientAccessResponse) Reset() {
+	*x = RevokePatientAccessResponse{}
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokePatientAccessResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokePatientAccessResponse) ProtoMessage() {}
+
+func (x *RevokePatientAccessResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_transfer_data_transfer_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokePatientAccessResponse.ProtoReflect.Descriptor instead.
+func (*RevokePatientAccessResponse) Descriptor() ([]byte, []int) {
+	return file_data_transfer_data_transfer_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *RevokePatientAccessResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_data_transfer_data_transfer_proto protoreflect.FileDescriptor
 
 const file_data_transfer_data_transfer_proto_rawDesc = "" +
@@ -1658,8 +2530,77 @@ const file_data_transfer_data_transfer_proto_rawDesc = "" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x14\n" +
 	"\x12ListClinicsRequest\"H\n" +
 	"\x13ListClinicsResponse\x121\n" +
-	"\aclinics\x18\x01 \x03(\v2\x17.datatransfer.v1.ClinicR\aclinics2\xc4\n" +
+	"\aclinics\x18\x01 \x03(\v2\x17.datatransfer.v1.ClinicR\aclinics\"\xaf\x02\n" +
+	"\x14PatientAccessRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
+	"patient_id\x18\x02 \x01(\x03R\tpatientId\x12\x1b\n" +
+	"\tclinic_id\x18\x03 \x01(\x03R\bclinicId\x12&\n" +
+	"\x0fmedical_data_id\x18\x04 \x01(\x03R\rmedicalDataId\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\x12(\n" +
+	"\x10blockchain_tx_id\x18\x06 \x01(\tR\x0eblockchainTxId\x12!\n" +
+	"\frequested_at\x18\a \x01(\tR\vrequestedAt\x12\x1f\n" +
+	"\vapproved_at\x18\b \x01(\tR\n" +
+	"approvedAt\x12\x1d\n" +
+	"\n" +
+	"expires_at\x18\t \x01(\tR\texpiresAt\"\x8a\x02\n" +
+	"\x14TemporaryPatientData\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12!\n" +
+	"\faccess_token\x18\x02 \x01(\tR\vaccessToken\x12\x1d\n" +
+	"\n" +
+	"patient_id\x18\x03 \x01(\x03R\tpatientId\x12\x1b\n" +
+	"\tclinic_id\x18\x04 \x01(\x03R\bclinicId\x12&\n" +
+	"\x0fmedical_data_id\x18\x05 \x01(\x03R\rmedicalDataId\x12\x1d\n" +
+	"\n" +
+	"granted_at\x18\x06 \x01(\tR\tgrantedAt\x12\x1d\n" +
+	"\n" +
+	"expires_at\x18\a \x01(\tR\texpiresAt\x12\x1d\n" +
+	"\n" +
+	"is_revoked\x18\b \x01(\bR\tisRevoked\"\x87\x01\n" +
+	"!CreatePatientAccessRequestRequest\x12\x1d\n" +
+	"\n" +
+	"patient_id\x18\x01 \x01(\x03R\tpatientId\x12\x1b\n" +
+	"\tclinic_id\x18\x02 \x01(\x03R\bclinicId\x12&\n" +
+	"\x0fmedical_data_id\x18\x03 \x01(\x03R\rmedicalDataId\"e\n" +
+	"\"CreatePatientAccessRequestResponse\x12?\n" +
+	"\arequest\x18\x01 \x01(\v2%.datatransfer.v1.PatientAccessRequestR\arequest\"d\n" +
+	"\"ApprovePatientAccessRequestRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\x03R\trequestId\x12\x1f\n" +
+	"\vapprover_id\x18\x02 \x01(\x03R\n" +
+	"approverId\"\xb4\x01\n" +
+	"#ApprovePatientAccessRequestResponse\x12?\n" +
+	"\arequest\x18\x01 \x01(\v2%.datatransfer.v1.PatientAccessRequestR\arequest\x12L\n" +
+	"\x0etemporary_data\x18\x02 \x01(\v2%.datatransfer.v1.TemporaryPatientDataR\rtemporaryData\"B\n" +
+	"!RejectPatientAccessRequestRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\x03R\trequestId\"e\n" +
+	"\"RejectPatientAccessRequestResponse\x12?\n" +
+	"\arequest\x18\x01 \x01(\v2%.datatransfer.v1.PatientAccessRequestR\arequest\"?\n" +
+	"\x1eGetPatientAccessRequestRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\x03R\trequestId\"b\n" +
+	"\x1fGetPatientAccessRequestResponse\x12?\n" +
+	"\arequest\x18\x01 \x01(\v2%.datatransfer.v1.PatientAccessRequestR\arequest\"\xad\x01\n" +
+	" ListPatientAccessRequestsRequest\x12\"\n" +
+	"\n" +
+	"patient_id\x18\x01 \x01(\x03H\x00R\tpatientId\x88\x01\x01\x12 \n" +
+	"\tclinic_id\x18\x02 \x01(\x03H\x01R\bclinicId\x88\x01\x01\x12\x1b\n" +
+	"\x06status\x18\x03 \x01(\tH\x02R\x06status\x88\x01\x01B\r\n" +
+	"\v_patient_idB\f\n" +
+	"\n" +
+	"_clinic_idB\t\n" +
+	"\a_status\"f\n" +
+	"!ListPatientAccessRequestsResponse\x12A\n" +
+	"\brequests\x18\x01 \x03(\v2%.datatransfer.v1.PatientAccessRequestR\brequests\"C\n" +
+	"\x1eGetTemporaryPatientDataRequest\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"b\n" +
+	"\x1fGetTemporaryPatientDataResponse\x12?\n" +
+	"\fmedical_data\x18\x01 \x01(\v2\x1c.datatransfer.v1.MedicalDataR\vmedicalData\"?\n" +
+	"\x1aRevokePatientAccessRequest\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"7\n" +
+	"\x1bRevokePatientAccessResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xd2\x11\n" +
 	"\x13DataTransferService\x12j\n" +
 	"\x11CreateMedicalData\x12).datatransfer.v1.CreateMedicalDataRequest\x1a*.datatransfer.v1.CreateMedicalDataResponse\x12a\n" +
 	"\x0eGetMedicalData\x12&.datatransfer.v1.GetMedicalDataRequest\x1a'.datatransfer.v1.GetMedicalDataResponse\x12j\n" +
@@ -1673,7 +2614,14 @@ const file_data_transfer_data_transfer_proto_rawDesc = "" +
 	"\tGetClinic\x12!.datatransfer.v1.GetClinicRequest\x1a\".datatransfer.v1.GetClinicResponse\x12[\n" +
 	"\fUpdateClinic\x12$.datatransfer.v1.UpdateClinicRequest\x1a%.datatransfer.v1.UpdateClinicResponse\x12[\n" +
 	"\fDeleteClinic\x12$.datatransfer.v1.DeleteClinicRequest\x1a%.datatransfer.v1.DeleteClinicResponse\x12X\n" +
-	"\vListClinics\x12#.datatransfer.v1.ListClinicsRequest\x1a$.datatransfer.v1.ListClinicsResponseB[ZYgithub.com/axmdl1/MedicalDataExchange/core-service/pkg/gen/go/datatransfer;datatransferv1b\x06proto3"
+	"\vListClinics\x12#.datatransfer.v1.ListClinicsRequest\x1a$.datatransfer.v1.ListClinicsResponse\x12\x85\x01\n" +
+	"\x1aCreatePatientAccessRequest\x122.datatransfer.v1.CreatePatientAccessRequestRequest\x1a3.datatransfer.v1.CreatePatientAccessRequestResponse\x12\x88\x01\n" +
+	"\x1bApprovePatientAccessRequest\x123.datatransfer.v1.ApprovePatientAccessRequestRequest\x1a4.datatransfer.v1.ApprovePatientAccessRequestResponse\x12\x85\x01\n" +
+	"\x1aRejectPatientAccessRequest\x122.datatransfer.v1.RejectPatientAccessRequestRequest\x1a3.datatransfer.v1.RejectPatientAccessRequestResponse\x12|\n" +
+	"\x17GetPatientAccessRequest\x12/.datatransfer.v1.GetPatientAccessRequestRequest\x1a0.datatransfer.v1.GetPatientAccessRequestResponse\x12\x82\x01\n" +
+	"\x19ListPatientAccessRequests\x121.datatransfer.v1.ListPatientAccessRequestsRequest\x1a2.datatransfer.v1.ListPatientAccessRequestsResponse\x12|\n" +
+	"\x17GetTemporaryPatientData\x12/.datatransfer.v1.GetTemporaryPatientDataRequest\x1a0.datatransfer.v1.GetTemporaryPatientDataResponse\x12p\n" +
+	"\x13RevokePatientAccess\x12+.datatransfer.v1.RevokePatientAccessRequest\x1a,.datatransfer.v1.RevokePatientAccessResponseB[ZYgithub.com/axmdl1/MedicalDataExchange/core-service/pkg/gen/go/datatransfer;datatransferv1b\x06proto3"
 
 var (
 	file_data_transfer_data_transfer_proto_rawDescOnce sync.Once
@@ -1687,37 +2635,53 @@ func file_data_transfer_data_transfer_proto_rawDescGZIP() []byte {
 	return file_data_transfer_data_transfer_proto_rawDescData
 }
 
-var file_data_transfer_data_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_data_transfer_data_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
 var file_data_transfer_data_transfer_proto_goTypes = []any{
-	(*MedicalData)(nil),                        // 0: datatransfer.v1.MedicalData
-	(*DataTransfer)(nil),                       // 1: datatransfer.v1.DataTransfer
-	(*CreateMedicalDataRequest)(nil),           // 2: datatransfer.v1.CreateMedicalDataRequest
-	(*CreateMedicalDataResponse)(nil),          // 3: datatransfer.v1.CreateMedicalDataResponse
-	(*GetMedicalDataRequest)(nil),              // 4: datatransfer.v1.GetMedicalDataRequest
-	(*GetMedicalDataResponse)(nil),             // 5: datatransfer.v1.GetMedicalDataResponse
-	(*DeleteMedicalDataRequest)(nil),           // 6: datatransfer.v1.DeleteMedicalDataRequest
-	(*DeleteMedicalDataResponse)(nil),          // 7: datatransfer.v1.DeleteMedicalDataResponse
-	(*ListMedicalDataRequest)(nil),             // 8: datatransfer.v1.ListMedicalDataRequest
-	(*ListMedicalDataResponse)(nil),            // 9: datatransfer.v1.ListMedicalDataResponse
-	(*CreateDataTransferRequest)(nil),          // 10: datatransfer.v1.CreateDataTransferRequest
-	(*CreateDataTransferResponse)(nil),         // 11: datatransfer.v1.CreateDataTransferResponse
-	(*GetDataTransferRequest)(nil),             // 12: datatransfer.v1.GetDataTransferRequest
-	(*GetDataTransferResponse)(nil),            // 13: datatransfer.v1.GetDataTransferResponse
-	(*ListDataTransfersRequest)(nil),           // 14: datatransfer.v1.ListDataTransfersRequest
-	(*ListDataTransfersResponse)(nil),          // 15: datatransfer.v1.ListDataTransfersResponse
-	(*HandleDataTransferDecisionRequest)(nil),  // 16: datatransfer.v1.HandleDataTransferDecisionRequest
-	(*HandleDataTransferDecisionResponse)(nil), // 17: datatransfer.v1.HandleDataTransferDecisionResponse
-	(*Clinic)(nil),                             // 18: datatransfer.v1.Clinic
-	(*CreateClinicRequest)(nil),                // 19: datatransfer.v1.CreateClinicRequest
-	(*CreateClinicResponse)(nil),               // 20: datatransfer.v1.CreateClinicResponse
-	(*GetClinicRequest)(nil),                   // 21: datatransfer.v1.GetClinicRequest
-	(*GetClinicResponse)(nil),                  // 22: datatransfer.v1.GetClinicResponse
-	(*UpdateClinicRequest)(nil),                // 23: datatransfer.v1.UpdateClinicRequest
-	(*UpdateClinicResponse)(nil),               // 24: datatransfer.v1.UpdateClinicResponse
-	(*DeleteClinicRequest)(nil),                // 25: datatransfer.v1.DeleteClinicRequest
-	(*DeleteClinicResponse)(nil),               // 26: datatransfer.v1.DeleteClinicResponse
-	(*ListClinicsRequest)(nil),                 // 27: datatransfer.v1.ListClinicsRequest
-	(*ListClinicsResponse)(nil),                // 28: datatransfer.v1.ListClinicsResponse
+	(*MedicalData)(nil),                         // 0: datatransfer.v1.MedicalData
+	(*DataTransfer)(nil),                        // 1: datatransfer.v1.DataTransfer
+	(*CreateMedicalDataRequest)(nil),            // 2: datatransfer.v1.CreateMedicalDataRequest
+	(*CreateMedicalDataResponse)(nil),           // 3: datatransfer.v1.CreateMedicalDataResponse
+	(*GetMedicalDataRequest)(nil),               // 4: datatransfer.v1.GetMedicalDataRequest
+	(*GetMedicalDataResponse)(nil),              // 5: datatransfer.v1.GetMedicalDataResponse
+	(*DeleteMedicalDataRequest)(nil),            // 6: datatransfer.v1.DeleteMedicalDataRequest
+	(*DeleteMedicalDataResponse)(nil),           // 7: datatransfer.v1.DeleteMedicalDataResponse
+	(*ListMedicalDataRequest)(nil),              // 8: datatransfer.v1.ListMedicalDataRequest
+	(*ListMedicalDataResponse)(nil),             // 9: datatransfer.v1.ListMedicalDataResponse
+	(*CreateDataTransferRequest)(nil),           // 10: datatransfer.v1.CreateDataTransferRequest
+	(*CreateDataTransferResponse)(nil),          // 11: datatransfer.v1.CreateDataTransferResponse
+	(*GetDataTransferRequest)(nil),              // 12: datatransfer.v1.GetDataTransferRequest
+	(*GetDataTransferResponse)(nil),             // 13: datatransfer.v1.GetDataTransferResponse
+	(*ListDataTransfersRequest)(nil),            // 14: datatransfer.v1.ListDataTransfersRequest
+	(*ListDataTransfersResponse)(nil),           // 15: datatransfer.v1.ListDataTransfersResponse
+	(*HandleDataTransferDecisionRequest)(nil),   // 16: datatransfer.v1.HandleDataTransferDecisionRequest
+	(*HandleDataTransferDecisionResponse)(nil),  // 17: datatransfer.v1.HandleDataTransferDecisionResponse
+	(*Clinic)(nil),                              // 18: datatransfer.v1.Clinic
+	(*CreateClinicRequest)(nil),                 // 19: datatransfer.v1.CreateClinicRequest
+	(*CreateClinicResponse)(nil),                // 20: datatransfer.v1.CreateClinicResponse
+	(*GetClinicRequest)(nil),                    // 21: datatransfer.v1.GetClinicRequest
+	(*GetClinicResponse)(nil),                   // 22: datatransfer.v1.GetClinicResponse
+	(*UpdateClinicRequest)(nil),                 // 23: datatransfer.v1.UpdateClinicRequest
+	(*UpdateClinicResponse)(nil),                // 24: datatransfer.v1.UpdateClinicResponse
+	(*DeleteClinicRequest)(nil),                 // 25: datatransfer.v1.DeleteClinicRequest
+	(*DeleteClinicResponse)(nil),                // 26: datatransfer.v1.DeleteClinicResponse
+	(*ListClinicsRequest)(nil),                  // 27: datatransfer.v1.ListClinicsRequest
+	(*ListClinicsResponse)(nil),                 // 28: datatransfer.v1.ListClinicsResponse
+	(*PatientAccessRequest)(nil),                // 29: datatransfer.v1.PatientAccessRequest
+	(*TemporaryPatientData)(nil),                // 30: datatransfer.v1.TemporaryPatientData
+	(*CreatePatientAccessRequestRequest)(nil),   // 31: datatransfer.v1.CreatePatientAccessRequestRequest
+	(*CreatePatientAccessRequestResponse)(nil),  // 32: datatransfer.v1.CreatePatientAccessRequestResponse
+	(*ApprovePatientAccessRequestRequest)(nil),  // 33: datatransfer.v1.ApprovePatientAccessRequestRequest
+	(*ApprovePatientAccessRequestResponse)(nil), // 34: datatransfer.v1.ApprovePatientAccessRequestResponse
+	(*RejectPatientAccessRequestRequest)(nil),   // 35: datatransfer.v1.RejectPatientAccessRequestRequest
+	(*RejectPatientAccessRequestResponse)(nil),  // 36: datatransfer.v1.RejectPatientAccessRequestResponse
+	(*GetPatientAccessRequestRequest)(nil),      // 37: datatransfer.v1.GetPatientAccessRequestRequest
+	(*GetPatientAccessRequestResponse)(nil),     // 38: datatransfer.v1.GetPatientAccessRequestResponse
+	(*ListPatientAccessRequestsRequest)(nil),    // 39: datatransfer.v1.ListPatientAccessRequestsRequest
+	(*ListPatientAccessRequestsResponse)(nil),   // 40: datatransfer.v1.ListPatientAccessRequestsResponse
+	(*GetTemporaryPatientDataRequest)(nil),      // 41: datatransfer.v1.GetTemporaryPatientDataRequest
+	(*GetTemporaryPatientDataResponse)(nil),     // 42: datatransfer.v1.GetTemporaryPatientDataResponse
+	(*RevokePatientAccessRequest)(nil),          // 43: datatransfer.v1.RevokePatientAccessRequest
+	(*RevokePatientAccessResponse)(nil),         // 44: datatransfer.v1.RevokePatientAccessResponse
 }
 var file_data_transfer_data_transfer_proto_depIdxs = []int32{
 	0,  // 0: datatransfer.v1.CreateMedicalDataRequest.medical_data:type_name -> datatransfer.v1.MedicalData
@@ -1734,37 +2698,58 @@ var file_data_transfer_data_transfer_proto_depIdxs = []int32{
 	18, // 11: datatransfer.v1.UpdateClinicRequest.clinic:type_name -> datatransfer.v1.Clinic
 	18, // 12: datatransfer.v1.UpdateClinicResponse.clinic:type_name -> datatransfer.v1.Clinic
 	18, // 13: datatransfer.v1.ListClinicsResponse.clinics:type_name -> datatransfer.v1.Clinic
-	2,  // 14: datatransfer.v1.DataTransferService.CreateMedicalData:input_type -> datatransfer.v1.CreateMedicalDataRequest
-	4,  // 15: datatransfer.v1.DataTransferService.GetMedicalData:input_type -> datatransfer.v1.GetMedicalDataRequest
-	6,  // 16: datatransfer.v1.DataTransferService.DeleteMedicalData:input_type -> datatransfer.v1.DeleteMedicalDataRequest
-	8,  // 17: datatransfer.v1.DataTransferService.ListMedicalData:input_type -> datatransfer.v1.ListMedicalDataRequest
-	10, // 18: datatransfer.v1.DataTransferService.CreateDataTransfer:input_type -> datatransfer.v1.CreateDataTransferRequest
-	12, // 19: datatransfer.v1.DataTransferService.GetDataTransfer:input_type -> datatransfer.v1.GetDataTransferRequest
-	14, // 20: datatransfer.v1.DataTransferService.ListDataTransfers:input_type -> datatransfer.v1.ListDataTransfersRequest
-	16, // 21: datatransfer.v1.DataTransferService.HandleDataTransferDecision:input_type -> datatransfer.v1.HandleDataTransferDecisionRequest
-	19, // 22: datatransfer.v1.DataTransferService.CreateClinic:input_type -> datatransfer.v1.CreateClinicRequest
-	21, // 23: datatransfer.v1.DataTransferService.GetClinic:input_type -> datatransfer.v1.GetClinicRequest
-	23, // 24: datatransfer.v1.DataTransferService.UpdateClinic:input_type -> datatransfer.v1.UpdateClinicRequest
-	25, // 25: datatransfer.v1.DataTransferService.DeleteClinic:input_type -> datatransfer.v1.DeleteClinicRequest
-	27, // 26: datatransfer.v1.DataTransferService.ListClinics:input_type -> datatransfer.v1.ListClinicsRequest
-	3,  // 27: datatransfer.v1.DataTransferService.CreateMedicalData:output_type -> datatransfer.v1.CreateMedicalDataResponse
-	5,  // 28: datatransfer.v1.DataTransferService.GetMedicalData:output_type -> datatransfer.v1.GetMedicalDataResponse
-	7,  // 29: datatransfer.v1.DataTransferService.DeleteMedicalData:output_type -> datatransfer.v1.DeleteMedicalDataResponse
-	9,  // 30: datatransfer.v1.DataTransferService.ListMedicalData:output_type -> datatransfer.v1.ListMedicalDataResponse
-	11, // 31: datatransfer.v1.DataTransferService.CreateDataTransfer:output_type -> datatransfer.v1.CreateDataTransferResponse
-	13, // 32: datatransfer.v1.DataTransferService.GetDataTransfer:output_type -> datatransfer.v1.GetDataTransferResponse
-	15, // 33: datatransfer.v1.DataTransferService.ListDataTransfers:output_type -> datatransfer.v1.ListDataTransfersResponse
-	17, // 34: datatransfer.v1.DataTransferService.HandleDataTransferDecision:output_type -> datatransfer.v1.HandleDataTransferDecisionResponse
-	20, // 35: datatransfer.v1.DataTransferService.CreateClinic:output_type -> datatransfer.v1.CreateClinicResponse
-	22, // 36: datatransfer.v1.DataTransferService.GetClinic:output_type -> datatransfer.v1.GetClinicResponse
-	24, // 37: datatransfer.v1.DataTransferService.UpdateClinic:output_type -> datatransfer.v1.UpdateClinicResponse
-	26, // 38: datatransfer.v1.DataTransferService.DeleteClinic:output_type -> datatransfer.v1.DeleteClinicResponse
-	28, // 39: datatransfer.v1.DataTransferService.ListClinics:output_type -> datatransfer.v1.ListClinicsResponse
-	27, // [27:40] is the sub-list for method output_type
-	14, // [14:27] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	29, // 14: datatransfer.v1.CreatePatientAccessRequestResponse.request:type_name -> datatransfer.v1.PatientAccessRequest
+	29, // 15: datatransfer.v1.ApprovePatientAccessRequestResponse.request:type_name -> datatransfer.v1.PatientAccessRequest
+	30, // 16: datatransfer.v1.ApprovePatientAccessRequestResponse.temporary_data:type_name -> datatransfer.v1.TemporaryPatientData
+	29, // 17: datatransfer.v1.RejectPatientAccessRequestResponse.request:type_name -> datatransfer.v1.PatientAccessRequest
+	29, // 18: datatransfer.v1.GetPatientAccessRequestResponse.request:type_name -> datatransfer.v1.PatientAccessRequest
+	29, // 19: datatransfer.v1.ListPatientAccessRequestsResponse.requests:type_name -> datatransfer.v1.PatientAccessRequest
+	0,  // 20: datatransfer.v1.GetTemporaryPatientDataResponse.medical_data:type_name -> datatransfer.v1.MedicalData
+	2,  // 21: datatransfer.v1.DataTransferService.CreateMedicalData:input_type -> datatransfer.v1.CreateMedicalDataRequest
+	4,  // 22: datatransfer.v1.DataTransferService.GetMedicalData:input_type -> datatransfer.v1.GetMedicalDataRequest
+	6,  // 23: datatransfer.v1.DataTransferService.DeleteMedicalData:input_type -> datatransfer.v1.DeleteMedicalDataRequest
+	8,  // 24: datatransfer.v1.DataTransferService.ListMedicalData:input_type -> datatransfer.v1.ListMedicalDataRequest
+	10, // 25: datatransfer.v1.DataTransferService.CreateDataTransfer:input_type -> datatransfer.v1.CreateDataTransferRequest
+	12, // 26: datatransfer.v1.DataTransferService.GetDataTransfer:input_type -> datatransfer.v1.GetDataTransferRequest
+	14, // 27: datatransfer.v1.DataTransferService.ListDataTransfers:input_type -> datatransfer.v1.ListDataTransfersRequest
+	16, // 28: datatransfer.v1.DataTransferService.HandleDataTransferDecision:input_type -> datatransfer.v1.HandleDataTransferDecisionRequest
+	19, // 29: datatransfer.v1.DataTransferService.CreateClinic:input_type -> datatransfer.v1.CreateClinicRequest
+	21, // 30: datatransfer.v1.DataTransferService.GetClinic:input_type -> datatransfer.v1.GetClinicRequest
+	23, // 31: datatransfer.v1.DataTransferService.UpdateClinic:input_type -> datatransfer.v1.UpdateClinicRequest
+	25, // 32: datatransfer.v1.DataTransferService.DeleteClinic:input_type -> datatransfer.v1.DeleteClinicRequest
+	27, // 33: datatransfer.v1.DataTransferService.ListClinics:input_type -> datatransfer.v1.ListClinicsRequest
+	31, // 34: datatransfer.v1.DataTransferService.CreatePatientAccessRequest:input_type -> datatransfer.v1.CreatePatientAccessRequestRequest
+	33, // 35: datatransfer.v1.DataTransferService.ApprovePatientAccessRequest:input_type -> datatransfer.v1.ApprovePatientAccessRequestRequest
+	35, // 36: datatransfer.v1.DataTransferService.RejectPatientAccessRequest:input_type -> datatransfer.v1.RejectPatientAccessRequestRequest
+	37, // 37: datatransfer.v1.DataTransferService.GetPatientAccessRequest:input_type -> datatransfer.v1.GetPatientAccessRequestRequest
+	39, // 38: datatransfer.v1.DataTransferService.ListPatientAccessRequests:input_type -> datatransfer.v1.ListPatientAccessRequestsRequest
+	41, // 39: datatransfer.v1.DataTransferService.GetTemporaryPatientData:input_type -> datatransfer.v1.GetTemporaryPatientDataRequest
+	43, // 40: datatransfer.v1.DataTransferService.RevokePatientAccess:input_type -> datatransfer.v1.RevokePatientAccessRequest
+	3,  // 41: datatransfer.v1.DataTransferService.CreateMedicalData:output_type -> datatransfer.v1.CreateMedicalDataResponse
+	5,  // 42: datatransfer.v1.DataTransferService.GetMedicalData:output_type -> datatransfer.v1.GetMedicalDataResponse
+	7,  // 43: datatransfer.v1.DataTransferService.DeleteMedicalData:output_type -> datatransfer.v1.DeleteMedicalDataResponse
+	9,  // 44: datatransfer.v1.DataTransferService.ListMedicalData:output_type -> datatransfer.v1.ListMedicalDataResponse
+	11, // 45: datatransfer.v1.DataTransferService.CreateDataTransfer:output_type -> datatransfer.v1.CreateDataTransferResponse
+	13, // 46: datatransfer.v1.DataTransferService.GetDataTransfer:output_type -> datatransfer.v1.GetDataTransferResponse
+	15, // 47: datatransfer.v1.DataTransferService.ListDataTransfers:output_type -> datatransfer.v1.ListDataTransfersResponse
+	17, // 48: datatransfer.v1.DataTransferService.HandleDataTransferDecision:output_type -> datatransfer.v1.HandleDataTransferDecisionResponse
+	20, // 49: datatransfer.v1.DataTransferService.CreateClinic:output_type -> datatransfer.v1.CreateClinicResponse
+	22, // 50: datatransfer.v1.DataTransferService.GetClinic:output_type -> datatransfer.v1.GetClinicResponse
+	24, // 51: datatransfer.v1.DataTransferService.UpdateClinic:output_type -> datatransfer.v1.UpdateClinicResponse
+	26, // 52: datatransfer.v1.DataTransferService.DeleteClinic:output_type -> datatransfer.v1.DeleteClinicResponse
+	28, // 53: datatransfer.v1.DataTransferService.ListClinics:output_type -> datatransfer.v1.ListClinicsResponse
+	32, // 54: datatransfer.v1.DataTransferService.CreatePatientAccessRequest:output_type -> datatransfer.v1.CreatePatientAccessRequestResponse
+	34, // 55: datatransfer.v1.DataTransferService.ApprovePatientAccessRequest:output_type -> datatransfer.v1.ApprovePatientAccessRequestResponse
+	36, // 56: datatransfer.v1.DataTransferService.RejectPatientAccessRequest:output_type -> datatransfer.v1.RejectPatientAccessRequestResponse
+	38, // 57: datatransfer.v1.DataTransferService.GetPatientAccessRequest:output_type -> datatransfer.v1.GetPatientAccessRequestResponse
+	40, // 58: datatransfer.v1.DataTransferService.ListPatientAccessRequests:output_type -> datatransfer.v1.ListPatientAccessRequestsResponse
+	42, // 59: datatransfer.v1.DataTransferService.GetTemporaryPatientData:output_type -> datatransfer.v1.GetTemporaryPatientDataResponse
+	44, // 60: datatransfer.v1.DataTransferService.RevokePatientAccess:output_type -> datatransfer.v1.RevokePatientAccessResponse
+	41, // [41:61] is the sub-list for method output_type
+	21, // [21:41] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_data_transfer_data_transfer_proto_init() }
@@ -1774,13 +2759,14 @@ func file_data_transfer_data_transfer_proto_init() {
 	}
 	file_data_transfer_data_transfer_proto_msgTypes[8].OneofWrappers = []any{}
 	file_data_transfer_data_transfer_proto_msgTypes[14].OneofWrappers = []any{}
+	file_data_transfer_data_transfer_proto_msgTypes[39].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_data_transfer_data_transfer_proto_rawDesc), len(file_data_transfer_data_transfer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   29,
+			NumMessages:   45,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
