@@ -41,7 +41,6 @@ class AuthManager {
     }
 
     getClinicId() {
-        // clinic_id может быть объектом с полем value (protobuf Int64Value)
         if (!this.user) return null;
         if (this.user.clinic_id && typeof this.user.clinic_id === 'object' && 'value' in this.user.clinic_id) {
             return this.user.clinic_id.value;
@@ -62,5 +61,4 @@ class AuthManager {
     }
 }
 
-// Global auth instance
 const auth = new AuthManager();
