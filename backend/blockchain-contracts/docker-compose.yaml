@@ -1,0 +1,7 @@
+version: "3"
+services:
+  ganache:
+    image: trufflesuite/ganache-cli:latest
+    command: ["--deterministic", "--mnemonic", "test test test test test test test test test test test junk", "--gasLimit", "0x6691b7", "--port", "8545"]
+    ports:
+      - "8545:8545"

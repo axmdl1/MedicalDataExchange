@@ -82,6 +82,28 @@ services:
       - "8080:80"
     networks: [mednet]
 
+  ganache:
+    platform: linux/amd64
+    image: trufflesuite/ganache-cli:latest
+    container_name: mde-ganache
+    command: >
+      --accounts 10
+      --defaultBalanceEther 1000
+      --mnemonic "test test test test test test test test test test test junk"
+      --gasLimit 8000000
+      --port 8545
+    ports:
+      - "8545:8545"
+    networks: [ mednet ]
+
+  blockchain-deployer:
+    build:
+      context: ./backend/blockchain-contracts
+    container_name: mde-blockchain-deployer
+    depends_on:
+      - ganache
+    networks: [ mednet ]
+
   info:
     image: alpine
     command: >
