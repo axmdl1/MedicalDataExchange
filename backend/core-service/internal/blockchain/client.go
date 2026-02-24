@@ -3,14 +3,13 @@ package blockchain
 import (
 	"context"
 	"fmt"
-	"log"
-	"math/big"
-	"os"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"log"
+	"math/big"
+	"os"
 
 	medical "github.com/axmdl1/MedicalDataExchange/backend/blockchain-contracts/medical"
 )
@@ -69,6 +68,9 @@ func NewBlockchain() *Blockchain {
 
 // VerifyToken проверяет токен (view call)
 func (bc *Blockchain) VerifyToken(requestID string, tokenHash common.Hash) (bool, error) {
+
+	logBc("VerifyToken START → request=%s tokenHash=%s", requestID, tokenHash.Hex())
+
 	ok, err := bc.Contract.VerifyToken(&bind.CallOpts{Context: context.Background()}, requestID, tokenHash)
 	return ok, err
 }
@@ -106,6 +108,9 @@ func (bc *Blockchain) Approve(requestID string, tokenHash common.Hash, expiresAt
 	}
 	auth.GasLimit = uint64(5_000_000)
 	auth.Value = big.NewInt(0)
+
+	logBc("Approve START → request=%s", requestID)
+	logBc("TokenHash = %s", tokenHash.Hex())
 
 	tx, err := bc.Contract.ApproveAccess(auth, requestID, tokenHash, big.NewInt(expiresAt))
 	if err != nil {

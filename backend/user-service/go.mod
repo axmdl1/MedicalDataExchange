@@ -4,7 +4,7 @@ go 1.25.4
 
 require (
 	github.com/axmdl1/MedicalDataExchange/core-service v0.0.0-00010101000000-000000000000
-	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/rs/zerolog v1.34.0
 	golang.org/x/crypto v0.40.0
